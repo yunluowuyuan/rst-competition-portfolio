@@ -1,0 +1,3039 @@
+<!DOCTYPE html>
+<!-- ============================================================
+     徐浩渊 · 个人主页（单文件纯净架构）
+     ────────────────────────────────────────────────────────────
+     技术栈   ：HTML5 语义化 + CSS3（CSS 变量双主题）+ 原生 JS
+     分层结构 ：
+       1. <head>          —— 元信息 / CSS 主题变量 / 全量样式
+       2. <body> 静态骨架  —— 星幕背景 / 顶栏导航 / 主容器 / 游戏弹窗
+       3. <script> 数据层  —— resume 结构化数据（经历/项目/技能…）
+       4. <script> 渲染层  —— buildXxxSection() 模板注入 #app
+       5. <script> 交互层  —— 主题切换 / 弹窗 / Tab 键盘导航 / 打印
+     无障碍   ：语义化标签 + ARIA + skip-link + 弹窗焦点圈定 + ESC 关闭
+     适配     ：375px ~ 1920px 无横向溢出；深空/明亮双主题；A4 打印归档
+     ============================================================ -->
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light dark">
+    <meta name="theme-color" id="themeColorMeta" content="#0f1923">
+    <title>徐浩渊 - 个人简历 | 工业工程 × 航空航天 × AI · 深空版</title>
+    <style>
+        :root {
+            --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+            --color-primary: #1e3b5c;
+            --color-primary-light: #2a5580;
+            --color-primary-dark: #152b42;
+            --color-accent: #c8913e;
+            --color-accent-light: #dba855;
+            --color-accent-glow: rgba(200, 145, 62, 0.25);
+            --color-bg: #f9f7f3;
+            --color-surface: #ffffff;
+            --color-surface-alt: #f2efe9;
+            --glass-bg: rgba(255, 255, 255, 0.5);
+            --glass-bg-strong: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.5);
+            --glass-blur: blur(14px);
+            --color-text: #1a1a1a;
+            --color-text-secondary: #475569;
+            --color-text-muted: #5b6b80;
+            --color-border: #e0dcd5;
+            --color-border-light: #ece8e1;
+            --color-shadow: rgba(30, 59, 92, 0.07);
+            --color-shadow-lg: rgba(30, 59, 92, 0.12);
+            --color-nav-bg: rgba(249, 247, 243, 0.88);
+            --color-hero-gradient-start: #1e3b5c;
+            --color-hero-gradient-end: #2a4a6e;
+            --color-hero-text: #2c2c2c;
+            --color-hero-sub: #5c5c5c;
+            --color-badge-bg: rgba(200, 145, 62, 0.1);
+            --color-badge-text: #8a5e2a;
+            --color-badge-border: rgba(200, 145, 62, 0.25);
+            --color-tab-active: #1e3b5c;
+            --color-tab-indicator: #c8913e;
+            --color-progress-bg: #e8e4dc;
+            --color-progress-fill: #1e3b5c;
+            --color-card-hover-shadow: rgba(30, 59, 92, 0.16);
+            --color-divider: #e8e4dc;
+            --color-timeline-dot: #c8913e;
+            --color-timeline-line: #d8d3c9;
+            --color-input-focus: #1e3b5c;
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 16px;
+            --radius-xl: 20px;
+            --transition-fast: 160ms ease;
+            --transition-smooth: 240ms ease;
+            --transition-slow: 350ms ease;
+            --nav-height: 56px;
+            --max-width: 1080px;
+            --section-gap: 2.8rem;
+        }
+
+        /* 全局横向溢出防护：overflow-x:clip 不破坏 position:fixed 顶栏；
+           hidden 作为旧内核兜底；打印时恢复以兼容分页 */
+        html {
+            overflow-x: hidden;
+            overflow-x: clip;
+        }
+        @media print {
+            html {
+                overflow-x: visible;
+            }
+        }
+
+        [data-theme="dark"] {
+            --color-bg: #0f1923;
+            --color-surface: #182230;
+            --color-surface-alt: #1d2a38;
+            --glass-bg: rgba(20, 30, 44, 0.5);
+            --glass-bg-strong: rgba(20, 30, 44, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-blur: blur(14px);
+            --color-text: #F1F5F9;
+            --color-text-secondary: #D4DBE5;
+            --color-text-muted: #A8B0BD;
+            --color-border: #2a3542;
+            --color-border-light: #242f3a;
+            --color-shadow: rgba(0, 0, 0, 0.25);
+            --color-shadow-lg: rgba(0, 0, 0, 0.4);
+            --color-nav-bg: rgba(12, 18, 32, 0.85);
+            --color-hero-gradient-start: #111d2b;
+            --color-hero-gradient-end: #1a2d40;
+            --color-hero-text: #f0ece6;
+            --color-hero-sub: rgba(240, 236, 230, 0.8);
+            --color-badge-bg: rgba(200, 145, 62, 0.14);
+            --color-badge-text: #dba855;
+            --color-badge-border: rgba(200, 145, 62, 0.3);
+            --color-tab-active: #c8913e;
+            --color-tab-indicator: #dba855;
+            --color-progress-bg: #253240;
+            --color-progress-fill: #c8913e;
+            --color-card-hover-shadow: rgba(0, 0, 0, 0.45);
+            --color-divider: #2a3542;
+            --color-timeline-line: #2e3a48;
+            --color-input-focus: #dba855;
+            --color-primary: #4a8bc2;
+            --color-primary-light: #5fa0d4;
+            --color-primary-dark: #356a94;
+            --color-accent: #dba855;
+            --color-accent-light: #e8c97a;
+            --color-accent-glow: rgba(219, 168, 85, 0.3);
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            font-size: 16px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
+        }
+
+        body {
+            font-family: var(--font-stack);
+            background: transparent;
+            color: var(--color-text);
+            line-height: 1.65;
+            transition: color var(--transition-smooth);
+            min-height: 100vh;
+            padding-top: var(--nav-height);
+            letter-spacing: 0.01em;
+            position: relative;
+            z-index: 0;
+        }
+
+        /* ============ STARFIELD BACKGROUND ============ */
+        .starfield {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 1;
+            pointer-events: none;
+            overflow: visible;
+            background: radial-gradient(circle at 50% 30%, #151d2a 0%, #0b0f19 70%, #05070d 100%);
+        }
+
+        [data-theme="light"] .starfield {
+            background: linear-gradient(135deg, #f0f4f9 0%, #e2ebf5 50%, #d6e2f0 100%);
+        }
+
+        /* 星云光晕层 - 仅深色模式可见 */
+        .starfield::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(ellipse at 30% 40%, rgba(120, 80, 180, 0.12) 0%, transparent 55%),
+                radial-gradient(ellipse at 70% 60%, rgba(60, 120, 160, 0.1) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 30%, rgba(100, 140, 200, 0.08) 0%, transparent 65%);
+            pointer-events: none;
+            transition: opacity var(--transition-smooth);
+        }
+        [data-theme="light"] .starfield::before {
+            opacity: 0;
+        }
+
+        /* 巨型星球光晕 - 右下角蓝色星体 */
+        .starfield::after {
+            content: '';
+            position: absolute;
+            bottom: -5%;
+            right: -5%;
+            width: 55vh;
+            height: 55vh;
+            background:
+                radial-gradient(circle at 75% 75%, rgba(59, 130, 246, 0.35) 0%, rgba(30, 59, 92, 0.2) 40%, rgba(15, 30, 60, 0.08) 65%, transparent 80%),
+                radial-gradient(circle at 75% 75%, rgba(100, 160, 255, 0.15) 0%, transparent 35%);
+            filter: blur(30px);
+            pointer-events: none;
+            transition: opacity var(--transition-smooth);
+        }
+        [data-theme="light"] .starfield::after {
+            opacity: 0.45;
+            background:
+                radial-gradient(circle at 75% 75%, rgba(200, 145, 62, 0.25) 0%, rgba(59, 130, 246, 0.12) 40%, transparent 70%);
+        }
+
+        /* 顶部对称光晕 - 左上角淡金星云 */
+        .starfield .glow-top {
+            position: absolute;
+            top: -8%;
+            left: -5%;
+            width: 45vh;
+            height: 45vh;
+            background:
+                radial-gradient(circle at 30% 30%, rgba(200, 145, 62, 0.18) 0%, rgba(140, 90, 30, 0.1) 45%, transparent 70%);
+            filter: blur(35px);
+            pointer-events: none;
+        }
+        [data-theme="light"] .starfield .glow-top {
+            opacity: 0.4;
+            background: radial-gradient(circle at 30% 30%, rgba(59, 130, 246, 0.2) 0%, transparent 60%);
+        }
+
+        /* Canvas 星空层 */
+        #spaceCanvas {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .bg-image {
+            display: none;
+        }
+
+        .bg-gradient-overlay {
+            display: none;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+        }
+
+        /* ============ NAVIGATION ============ */
+        .nav-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            height: var(--nav-height);
+            background: var(--color-nav-bg);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border-bottom: 1px solid var(--color-border-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 1.2rem;
+            transition: all var(--transition-smooth);
+        }
+        .nav-inner {
+            width: 100%;
+            max-width: var(--max-width);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.6rem;
+        }
+
+        .nav-brand {
+            font-weight: 700;
+            font-size: 1.08rem;
+            color: var(--color-primary);
+            white-space: nowrap;
+            letter-spacing: 0.02em;
+            flex-shrink: 0;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            list-style: none;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--color-text-secondary);
+            font-size: 0.84rem;
+            font-weight: 500;
+            padding: 0.4rem 0.65rem;
+            border-radius: var(--radius-sm);
+            transition: all var(--transition-fast);
+            white-space: nowrap;
+            letter-spacing: 0.015em;
+        }
+        .nav-links a:hover,
+        .nav-links a:focus-visible {
+            color: var(--color-primary);
+            background: var(--color-badge-bg);
+            outline: none;
+        }
+        .nav-links a:focus-visible {
+            outline: 2px solid var(--color-accent);
+            outline-offset: 2px;
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            flex-shrink: 0;
+        }
+
+        .btn-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            border: 1px solid var(--color-border);
+            background: var(--color-surface);
+            color: var(--color-text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            transition: all var(--transition-fast);
+            flex-shrink: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .btn-icon:hover {
+            background: var(--color-surface-alt);
+            color: var(--color-primary);
+            border-color: var(--color-accent);
+            box-shadow: 0 2px 8px var(--color-shadow);
+        }
+        .btn-icon:focus-visible {
+            outline: 2px solid var(--color-accent);
+            outline-offset: 2px;
+        }
+        .btn-icon svg {
+            width: 16px;
+            height: 16px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            pointer-events: none;
+        }
+
+        @media (max-width: 680px) {
+            .nav-links a {
+                font-size: 0.76rem;
+                padding: 0.3rem 0.45rem;
+            }
+            .nav-brand {
+                font-size: 0.95rem;
+            }
+            .btn-icon {
+                width: 30px;
+                height: 30px;
+                font-size: 0.85rem;
+            }
+        }
+        @media (max-width: 520px) {
+            .nav-links a.nav-link-optional {
+                display: none;
+            }
+            .nav-links a {
+                font-size: 0.73rem;
+                padding: 0.28rem 0.38rem;
+            }
+        }
+
+        /* ============ MAIN CONTAINER ============ */
+        .main-container {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: 0 1.3rem 3rem;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* ============ HERO SECTION ============ */
+        .hero {
+            background: rgba(8, 14, 28, 0.35);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(200, 145, 62, 0.22);
+            color: var(--color-hero-text);
+            padding: 2.5rem 2rem 2.8rem;
+            border-radius: var(--radius-xl);
+            margin-top: 1.8rem;
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(200, 145, 62, 0.08);
+            transition: box-shadow var(--transition-smooth);
+        }
+        .hero:hover {
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 25px rgba(59, 130, 246, 0.15);
+        }
+        [data-theme="light"] .hero {
+            background: rgba(255, 255, 255, 0.75);
+            border: 1px solid rgba(200, 145, 62, 0.3);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12), 0 0 20px rgba(200, 145, 62, 0.06);
+        }
+        .hero::before,
+        .hero::after {
+            display: none;
+        }
+        .hero>* {
+            position: relative;
+            z-index: 1;
+        }
+        .hero-name {
+            font-size: 2.4rem;
+            font-weight: 800;
+            letter-spacing: 0.04em;
+            margin-bottom: 0.5rem;
+            line-height: 1.2;
+            color: #FFFFFF;
+            text-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
+        }
+        [data-theme="light"] .hero-name {
+            color: #1a1a1a;
+            text-shadow: none;
+        }
+        .hero-tagline {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #E2E8F0;
+            max-width: 620px;
+            margin: 0 auto 1.3rem;
+            line-height: 1.7;
+            letter-spacing: 0.02em;
+        }
+        [data-theme="light"] .hero-tagline {
+            color: #334155;
+        }
+        .hero-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+        }
+        .hero-badge {
+            display: inline-block;
+            padding: 0.4rem 0.9rem;
+            border-radius: 20px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            background: rgba(200, 145, 62, 0.12);
+            color: #F5D998;
+            border: 1px solid rgba(200, 145, 62, 0.3);
+            transition: all var(--transition-fast);
+            white-space: nowrap;
+        }
+        [data-theme="light"] .hero-badge {
+            color: #8B6914;
+        }
+        .hero-badge:hover {
+            background: rgba(200, 145, 62, 0.22);
+            border-color: rgba(200, 145, 62, 0.5);
+            transform: translateY(-1px);
+        }
+        .hero-contact {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.7rem;
+            justify-content: center;
+            align-items: center;
+        }
+        .hero-contact-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.55rem 1.1rem;
+            border-radius: 24px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-decoration: none;
+            letter-spacing: 0.02em;
+            cursor: pointer;
+            border: 1.5px solid rgba(200, 145, 62, 0.4);
+            background: rgba(200, 145, 62, 0.08);
+            color: #F5D998;
+            transition: all var(--transition-fast);
+            white-space: nowrap;
+            -webkit-tap-highlight-color: transparent;
+            font-family: var(--font-stack);
+        }
+        [data-theme="light"] .hero-contact-btn {
+            color: #8B6914;
+        }
+        .hero-contact-btn:hover {
+            background: rgba(200, 145, 62, 0.18);
+            border-color: rgba(200, 145, 62, 0.65);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+            transform: translateY(-1px);
+        }
+        .hero-contact-btn.btn-accent {
+            background: var(--color-accent);
+            border-color: var(--color-accent);
+            color: #1a1a1a;
+            font-weight: 700;
+        }
+        .hero-contact-btn.btn-accent:hover {
+            background: var(--color-accent-light);
+            border-color: var(--color-accent-light);
+            box-shadow: 0 6px 22px var(--color-accent-glow);
+        }
+        .hero-contact-btn svg {
+            width: 15px;
+            height: 15px;
+            flex-shrink: 0;
+        }
+        @media (max-width: 600px) {
+            .hero {
+                padding: 2.2rem 1.2rem 2.4rem;
+                border-radius: var(--radius-lg);
+                margin-top: 1rem;
+            }
+            .hero-name {
+                font-size: 1.7rem;
+            }
+            .hero-tagline {
+                font-size: 0.92rem;
+            }
+            .hero-badge {
+                font-size: 0.74rem;
+                padding: 0.3rem 0.7rem;
+            }
+            .hero-contact-btn {
+                font-size: 0.78rem;
+                padding: 0.45rem 0.85rem;
+            }
+        }
+
+        /* ============ SECTION COMMON ============ */
+        .section {
+            margin-top: var(--section-gap);
+            scroll-margin-top: calc(var(--nav-height) + 16px);
+        }
+        .section-title {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: #FFFFFF;
+            letter-spacing: 0.03em;
+            margin-bottom: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            position: relative;
+        }
+        [data-theme="light"] .section-title {
+            color: var(--color-primary);
+        }
+        .section-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--color-divider);
+            min-width: 20px;
+            margin-left: 0.3rem;
+        }
+        .section-prefix {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--color-accent);
+            letter-spacing: 0.12em;
+            opacity: 0.7;
+            font-variant-numeric: tabular-nums;
+        }
+        .section-title .section-title-text {
+            font-size: 1.35rem;
+            font-weight: 700;
+        }
+        .section-subtitle {
+            font-size: 0.9rem;
+            color: var(--color-text-muted);
+            margin-top: -0.7rem;
+            margin-bottom: 1.2rem;
+            letter-spacing: 0.02em;
+        }
+
+        /* ============ HIGHLIGHTS ============ */
+        .highlights-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 1rem;
+        }
+        .highlight-card {
+            background: rgba(8, 14, 28, 0.35);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(200, 145, 62, 0.22);
+            border-radius: var(--radius-md);
+            padding: 1.3rem 1.2rem;
+            transition: all var(--transition-smooth);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            border-left: 3px solid rgba(200, 145, 62, 0.55);
+        }
+        .highlight-card:hover {
+            transform: translateY(-3px);
+            background: rgba(8, 14, 28, 0.45);
+            border-color: rgba(200, 145, 62, 0.4);
+            box-shadow: 0 14px 32px rgba(0, 0, 0, 0.4), 0 0 25px rgba(59, 130, 246, 0.15);
+        }
+        [data-theme="light"] .highlight-card {
+            background: rgba(255, 255, 255, 0.75);
+            border: 1px solid rgba(200, 145, 62, 0.25);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+        }
+        [data-theme="light"] .highlight-card:hover {
+            background: rgba(255, 252, 245, 0.7);
+            box-shadow: 0 14px 32px rgba(0, 0, 0, 0.14);
+        }
+        .highlight-card .hl-number {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--color-accent);
+            letter-spacing: 0.02em;
+            line-height: 1;
+            margin-bottom: 0.4rem;
+        }
+        .highlight-card .hl-label {
+            font-size: 0.88rem;
+            color: var(--color-text-secondary);
+            line-height: 1.5;
+            letter-spacing: 0.015em;
+        }
+        .highlight-card .hl-icon {
+            position: absolute;
+            top: 10px;
+            right: 14px;
+            font-size: 1.6rem;
+            opacity: 0.15;
+            pointer-events: none;
+        }
+        .highlight-card.featured {
+            border-left: 3px solid rgba(200, 145, 62, 0.8);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4), 0 0 24px rgba(200, 145, 62, 0.08);
+        }
+        .highlight-card.featured .hl-number {
+            color: var(--color-accent);
+        }
+
+        /* ============ TABS ============ */
+        .tabs-container {
+            background: rgba(8, 14, 28, 0.35);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-radius: var(--radius-lg);
+            border: 1px solid rgba(200, 145, 62, 0.22);
+            overflow: hidden;
+            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4);
+        }
+        [data-theme="light"] .tabs-container {
+            background: rgba(255, 252, 245, 0.55);
+            border: 1px solid rgba(200, 145, 62, 0.25);
+            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.12);
+        }
+        .tabs-nav {
+            display: flex;
+            border-bottom: 1px solid var(--glass-border);
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
+            scrollbar-color: var(--color-border) transparent;
+            background: transparent;
+        }
+        .tabs-nav::-webkit-scrollbar {
+            height: 3px;
+        }
+        .tabs-nav::-webkit-scrollbar-thumb {
+            background: var(--color-border);
+            border-radius: 3px;
+        }
+        .tab-btn {
+            flex-shrink: 0;
+            padding: 0.85rem 1.3rem;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: var(--color-text-secondary);
+            letter-spacing: 0.02em;
+            transition: all var(--transition-fast);
+            position: relative;
+            white-space: nowrap;
+            font-family: var(--font-stack);
+            -webkit-tap-highlight-color: transparent;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -1px;
+        }
+        .tab-btn:hover {
+            color: var(--color-primary);
+            background: rgba(30, 59, 92, 0.03);
+        }
+        .tab-btn:first-child {
+            color: #F5D998;
+            font-weight: 700;
+        }
+        [data-theme="light"] .tab-btn:first-child {
+            color: #8B6914;
+        }
+        .tab-btn[aria-selected="true"] {
+            color: var(--color-tab-active);
+            border-bottom-color: var(--color-tab-indicator);
+            background: transparent;
+        }
+        .tab-btn.tab-featured[aria-selected="true"] {
+            color: #F5D998;
+        }
+        [data-theme="light"] .tab-btn.tab-featured[aria-selected="true"] {
+            color: #8B6914;
+        }
+        .tab-btn:focus-visible {
+            outline: 2px solid var(--color-accent);
+            outline-offset: -2px;
+            z-index: 2;
+        }
+        .tab-panel {
+            padding: 1.5rem 1.4rem;
+            animation: fadeSlideIn 280ms ease;
+        }
+        .tab-panel[hidden] {
+            display: none;
+        }
+        @keyframes fadeSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        @media (max-width: 500px) {
+            .tab-btn {
+                padding: 0.7rem 0.9rem;
+                font-size: 0.8rem;
+            }
+            .tab-panel {
+                padding: 1.1rem 0.9rem;
+            }
+        }
+
+        /* ============ CARDS ============ */
+        .card {
+            background: rgba(8, 14, 28, 0.35);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(200, 145, 62, 0.22);
+            border-radius: var(--radius-md);
+            padding: 1.3rem 1.3rem;
+            transition: all var(--transition-smooth);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            margin-bottom: 1rem;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+            background: rgba(8, 14, 28, 0.45);
+            border-color: rgba(200, 145, 62, 0.4);
+            box-shadow: 0 14px 32px rgba(0, 0, 0, 0.4), 0 0 25px rgba(59, 130, 246, 0.15);
+        }
+        [data-theme="light"] .card {
+            background: rgba(255, 255, 255, 0.75);
+            border: 1px solid rgba(200, 145, 62, 0.25);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+        }
+        [data-theme="light"] .card:hover {
+            background: rgba(255, 255, 255, 0.85);
+            box-shadow: 0 14px 32px rgba(0, 0, 0, 0.14);
+        }
+        .card.featured {
+            border-left: 3px solid rgba(200, 145, 62, 0.7);
+            box-shadow: 0 14px 32px rgba(0, 0, 0, 0.4), 0 0 24px rgba(200, 145, 62, 0.06);
+        }
+        [data-theme="light"] .card.featured {
+            box-shadow: 0 14px 32px rgba(0, 0, 0, 0.14), 0 0 20px rgba(200, 145, 62, 0.05);
+        }
+        .tab-btn.tab-featured {
+            color: #F5D998 !important;
+            font-weight: 700;
+        }
+        [data-theme="light"] .tab-btn.tab-featured {
+            color: #8B6914 !important;
+        }
+        .card:last-child {
+            margin-bottom: 0;
+        }
+        .card-header {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 0.5rem;
+            margin-bottom: 0.7rem;
+        }
+        .card-title {
+            font-weight: 700;
+            font-size: 1.05rem;
+            color: #FFFFFF;
+            letter-spacing: 0.02em;
+        }
+        [data-theme="light"] .card-title {
+            color: var(--color-primary);
+        }
+        .card-subtitle {
+            font-size: 0.82rem;
+            color: var(--color-text-muted);
+            letter-spacing: 0.015em;
+            white-space: nowrap;
+        }
+        .card-meta {
+            font-size: 0.8rem;
+            color: var(--color-accent);
+            font-weight: 600;
+            letter-spacing: 0.02em;
+        }
+        .card-body {
+            font-size: 0.88rem;
+            color: var(--color-text-secondary);
+            line-height: 1.7;
+            letter-spacing: 0.015em;
+            font-weight: 500;
+        }
+        .card-body ul {
+            list-style: none;
+            padding: 0;
+        }
+        .card-body ul li {
+            padding-left: 1.1em;
+            position: relative;
+            margin-bottom: 0.35rem;
+        }
+        .card-body ul li::before {
+            content: '▸';
+            position: absolute;
+            left: 0;
+            color: var(--color-accent);
+            font-weight: 700;
+            font-size: 0.75em;
+            top: 0.15em;
+        }
+        .card-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin-top: 0.8rem;
+        }
+        .card-tag {
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 0.25rem 0.6rem;
+            border-radius: 12px;
+            background: var(--color-badge-bg);
+            color: var(--color-badge-text);
+            border: 1px solid var(--color-badge-border);
+            letter-spacing: 0.02em;
+            white-space: nowrap;
+        }
+
+        .card-game-entry {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px dashed rgba(200, 145, 62, 0.3);
+        }
+        .game-launch-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.18), rgba(200, 145, 62, 0.18));
+            border: 1px solid rgba(200, 145, 62, 0.4);
+            border-radius: var(--radius-md);
+            color: #F5D998;
+            font-size: 0.95rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            cursor: pointer;
+            transition: all var(--transition-smooth);
+            position: relative;
+            overflow: hidden;
+        }
+        [data-theme="light"] .game-launch-btn {
+            color: #8B6914;
+        }
+        .game-launch-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.25), rgba(200, 145, 62, 0.25));
+            opacity: 0;
+            transition: opacity var(--transition-smooth);
+        }
+        .game-launch-btn:hover {
+            transform: translateY(-1px);
+            border-color: rgba(200, 145, 62, 0.6);
+            box-shadow: 0 0 25px rgba(59, 130, 246, 0.25), 0 0 15px rgba(200, 145, 62, 0.15);
+        }
+        .game-launch-btn:hover::before {
+            opacity: 1;
+        }
+        .game-btn-icon,
+        .game-btn-text {
+            position: relative;
+            z-index: 1;
+        }
+        .game-btn-icon {
+            font-size: 1.1rem;
+            animation: rocketBob 1.8s ease-in-out infinite;
+        }
+        @keyframes rocketBob {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-3px); }
+        }
+
+        /* ============ GAME MODAL ============ */
+        .game-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            display: none;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            padding: 2rem;
+            align-items: center;
+            justify-content: center;
+        }
+        .game-modal.active {
+            display: flex;
+        }
+        .game-modal-content {
+            position: relative;
+            width: 100%;
+            max-width: 960px;
+            height: 90vh;
+            background: #000;
+            border-radius: var(--radius-lg);
+            border: 1px solid rgba(200, 145, 62, 0.4);
+            box-shadow: 0 0 40px rgba(59, 130, 246, 0.2), 0 0 80px rgba(200, 145, 62, 0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .game-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.8rem 1.2rem;
+            background: rgba(8, 14, 28, 0.9);
+            border-bottom: 1px solid rgba(200, 145, 62, 0.3);
+        }
+        .game-modal-title {
+            color: #F5D998;
+            font-weight: 700;
+            font-size: 0.95rem;
+            letter-spacing: 0.05em;
+        }
+        .game-modal-close {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(200, 145, 62, 0.3);
+            color: #F5D998;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-fast);
+        }
+        .game-modal-close:hover {
+            background: rgba(200, 145, 62, 0.3);
+            transform: rotate(90deg);
+        }
+        .game-modal-iframe {
+            flex: 1;
+            width: 100%;
+            border: none;
+            background: #000;
+        }
+
+        /* ============ SKILL MATRIX ============ */
+        .skill-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+        .skill-item {
+            background: rgba(8, 14, 28, 0.35);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(200, 145, 62, 0.22);
+            border-radius: var(--radius-md);
+            padding: 1rem 1.2rem;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            transition: all var(--transition-smooth);
+        }
+        .skill-item:hover {
+            transform: translateY(-1px);
+            background: rgba(8, 14, 28, 0.5);
+            border-color: rgba(200, 145, 62, 0.4);
+            box-shadow: 0 14px 32px rgba(0, 0, 0, 0.4), 0 0 25px rgba(59, 130, 246, 0.15);
+        }
+        [data-theme="light"] .skill-item {
+            background: rgba(255, 252, 245, 0.55);
+            border: 1px solid rgba(200, 145, 62, 0.25);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+        }
+        [data-theme="light"] .skill-item:hover {
+            background: rgba(255, 252, 245, 0.7);
+            box-shadow: 0 14px 32px rgba(0, 0, 0, 0.14);
+        }
+        .skill-name-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            gap: 0.5rem;
+        }
+        .skill-name {
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: #FFFFFF;
+            letter-spacing: 0.02em;
+        }
+        [data-theme="light"] .skill-name {
+            color: var(--color-text);
+        }
+        .skill-stage-badge {
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            padding: 0.25rem 0.65rem;
+            border-radius: 12px;
+            white-space: nowrap;
+            transition: all var(--transition-fast);
+        }
+        .skill-stage-badge.stage-basic {
+            background: rgba(100, 116, 139, 0.18);
+            color: #94A3B8;
+            border: 1px solid rgba(100, 116, 139, 0.3);
+        }
+        .skill-stage-badge.stage-practice {
+            background: rgba(59, 130, 246, 0.15);
+            color: #60A5FA;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+        .skill-stage-badge.stage-core {
+            background: rgba(200, 145, 62, 0.18);
+            color: #F5D998;
+            border: 1px solid rgba(200, 145, 62, 0.4);
+        }
+        [data-theme="light"] .skill-stage-badge.stage-basic {
+            background: rgba(100, 116, 139, 0.1);
+            color: #475569;
+            border-color: rgba(100, 116, 139, 0.25);
+        }
+        [data-theme="light"] .skill-stage-badge.stage-practice {
+            background: rgba(59, 130, 246, 0.1);
+            color: #1d4ed8;
+            border-color: rgba(59, 130, 246, 0.25);
+        }
+        [data-theme="light"] .skill-stage-badge.stage-core {
+            background: rgba(200, 145, 62, 0.12);
+            color: #8B6914;
+            border-color: rgba(200, 145, 62, 0.3);
+        }
+        .skill-detail {
+            font-size: 0.76rem;
+            color: var(--color-text-muted);
+            margin-top: 0.4rem;
+            letter-spacing: 0.015em;
+            line-height: 1.4;
+        }
+        .skill-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem 1.4rem;
+            margin-bottom: 1rem;
+            padding: 0.7rem 1rem;
+            border: 1px dashed var(--color-border-light);
+            border-radius: var(--radius-sm);
+            background: rgba(8, 14, 28, 0.18);
+            font-size: 0.78rem;
+            color: var(--color-text-muted);
+        }
+        [data-theme="light"] .skill-legend {
+            background: rgba(255, 252, 245, 0.35);
+        }
+        .skill-legend-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            white-space: nowrap;
+        }
+        .skill-legend-desc {
+            letter-spacing: 0.015em;
+        }
+        @media (max-width: 640px) {
+            .skill-legend-desc {
+                display: none;
+            }
+        }
+        @media (max-width: 400px) {
+            .skill-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ============ TIMELINE ============ */
+        .timeline {
+            position: relative;
+            padding-left: 1.8rem;
+        }
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 7px;
+            top: 4px;
+            bottom: 4px;
+            width: 2px;
+            background: var(--color-timeline-line);
+            border-radius: 1px;
+        }
+        .timeline-item {
+            position: relative;
+            margin-bottom: 1.5rem;
+            padding-left: 0.6rem;
+        }
+        .timeline-item:last-child {
+            margin-bottom: 0;
+        }
+        .timeline-dot {
+            position: absolute;
+            left: -1.55rem;
+            top: 0.3rem;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--color-timeline-dot);
+            box-shadow: 0 0 0 4px transparent;
+            z-index: 1;
+        }
+        .timeline-content .tl-title {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: #FFFFFF;
+            letter-spacing: 0.02em;
+        }
+        [data-theme="light"] .timeline-content .tl-title {
+            color: var(--color-primary);
+        }
+        .timeline-content .tl-sub {
+            font-size: 0.8rem;
+            color: var(--color-text-muted);
+            letter-spacing: 0.015em;
+        }
+        .timeline-content .tl-desc {
+            font-size: 0.84rem;
+            color: var(--color-text-secondary);
+            margin-top: 0.3rem;
+            line-height: 1.7;
+            font-weight: 500;
+        }
+
+        /* ============ CERTIFICATES ============ */
+        .cert-list {
+            list-style: none;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 0.7rem;
+        }
+        .cert-item {
+            background: rgba(10, 15, 28, 0.45);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border-radius: var(--radius-sm);
+            padding: 0.8rem 1rem;
+            font-size: 0.84rem;
+            letter-spacing: 0.015em;
+            border: 1px solid rgba(200, 145, 62, 0.15);
+            transition: all var(--transition-fast);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--color-text);
+        }
+        .cert-item:hover {
+            border-color: rgba(200, 145, 62, 0.3);
+            background: rgba(10, 15, 28, 0.6);
+        }
+        [data-theme="light"] .cert-item {
+            background: rgba(255, 252, 245, 0.5);
+            border: 1px solid rgba(200, 145, 62, 0.2);
+        }
+        [data-theme="light"] .cert-item:hover {
+            background: rgba(255, 252, 245, 0.65);
+        }
+        .cert-icon {
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        /* ============ SELF-EVAL ============ */
+        .eval-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 1rem;
+        }
+        .eval-card {
+            background: rgba(10, 15, 28, 0.5);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(200, 145, 62, 0.18);
+            border-radius: var(--radius-md);
+            padding: 1.2rem;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            transition: all var(--transition-smooth);
+            border-left: 3px solid var(--color-accent);
+        }
+        .eval-card:hover {
+            transform: translateY(-2px);
+            background: rgba(10, 15, 28, 0.65);
+            box-shadow: 0 14px 32px rgba(0, 0, 0, 0.4);
+        }
+        [data-theme="light"] .eval-card {
+            background: rgba(255, 252, 245, 0.55);
+            border: 1px solid rgba(200, 145, 62, 0.25);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+        }
+        [data-theme="light"] .eval-card:hover {
+            background: rgba(255, 252, 245, 0.7);
+            box-shadow: 0 14px 32px rgba(0, 0, 0, 0.14);
+        }
+        .eval-card .eval-title {
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: var(--color-primary);
+            margin-bottom: 0.4rem;
+            letter-spacing: 0.02em;
+        }
+        .eval-card .eval-desc {
+            font-size: 0.82rem;
+            color: var(--color-text-secondary);
+            line-height: 1.6;
+            letter-spacing: 0.015em;
+        }
+
+        /* ============ FOOTER ============ */
+        .footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding: 1.5rem 0;
+            border-top: 1px solid var(--color-divider);
+            color: var(--color-text-muted);
+            font-size: 0.78rem;
+            letter-spacing: 0.02em;
+            line-height: 1.8;
+        }
+        .footer strong {
+            color: var(--color-text-secondary);
+        }
+
+        /* ============ BACK TO TOP ============ */
+        .back-to-top {
+            position: fixed;
+            bottom: 28px;
+            right: 28px;
+            z-index: 900;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 1px solid var(--color-border);
+            background: var(--color-surface);
+            color: var(--color-text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            box-shadow: 0 3px 12px var(--color-shadow-lg);
+            transition: all var(--transition-smooth);
+            opacity: 0;
+            transform: translateY(16px);
+            pointer-events: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .back-to-top.visible {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+        .back-to-top:hover {
+            background: var(--color-primary);
+            color: #fff;
+            border-color: var(--color-primary);
+            box-shadow: 0 6px 18px var(--color-card-hover-shadow);
+        }
+        .back-to-top svg {
+            width: 18px;
+            height: 18px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2.5;
+        }
+
+        /* ============ COPY TOAST ============ */
+        .toast {
+            position: fixed;
+            bottom: 36px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: var(--color-primary-dark);
+            color: #fff;
+            padding: 0.6rem 1.4rem;
+            border-radius: 24px;
+            font-size: 0.82rem;
+            letter-spacing: 0.02em;
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: all var(--transition-fast);
+            font-family: var(--font-stack);
+            white-space: nowrap;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* ============ CERTIFICATE MODAL ============ */
+        .cert-card {
+            cursor: pointer;
+            transition: all var(--transition-smooth);
+        }
+        .cert-card:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45), 0 0 30px rgba(200, 145, 62, 0.15);
+            border-color: rgba(200, 145, 62, 0.5);
+        }
+        .cert-view-hint {
+            display: block;
+            margin-top: 0.5rem;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: #F5D998;
+            letter-spacing: 0.03em;
+            transition: all var(--transition-fast);
+        }
+        [data-theme="light"] .cert-view-hint {
+            color: #8B6914;
+        }
+        .cert-card:hover .cert-view-hint {
+            text-shadow: 0 0 12px rgba(200, 145, 62, 0.5);
+        }
+        .cert-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 3000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .cert-modal[hidden] {
+            display: none;
+        }
+        .cert-modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .cert-modal-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(5, 8, 20, 0.85);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+        .cert-modal-content {
+            position: relative;
+            width: min(92vw, 900px);
+            max-height: 90vh;
+            background: rgba(10, 15, 28, 0.92);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(200, 145, 62, 0.25);
+            border-radius: 20px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(200, 145, 62, 0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transform: scale(0.92);
+            transition: transform 0.3s ease;
+        }
+        .cert-modal.active .cert-modal-content {
+            transform: scale(1);
+        }
+        .cert-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.2rem 1.5rem;
+            border-bottom: 1px solid rgba(200, 145, 62, 0.15);
+        }
+        .cert-modal-header h3 {
+            margin: 0;
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #F5D998;
+            letter-spacing: 0.02em;
+        }
+        .cert-modal-counter {
+            font-size: 0.85rem;
+            color: #A8B0BD;
+            font-weight: 500;
+        }
+        .cert-modal-close {
+            position: absolute;
+            top: 0.8rem;
+            right: 0.8rem;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 1px solid rgba(200, 145, 62, 0.2);
+            background: rgba(10, 15, 28, 0.6);
+            color: #CBD5E1;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-fast);
+            z-index: 10;
+        }
+        .cert-modal-close:hover {
+            background: rgba(200, 145, 62, 0.2);
+            color: #F5D998;
+            border-color: rgba(200, 145, 62, 0.4);
+            transform: rotate(90deg);
+        }
+        .cert-modal-body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.8rem;
+            padding: 1.5rem;
+            min-height: 300px;
+            flex: 1;
+        }
+        .cert-image-wrapper {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            max-width: 100%;
+            max-height: 55vh;
+            overflow: hidden;
+            border-radius: 12px;
+            background: rgba(5, 8, 20, 0.5);
+            border: 1px solid rgba(200, 145, 62, 0.12);
+        }
+        .cert-image-wrapper img {
+            max-width: 100%;
+            max-height: 55vh;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
+        .cert-modal-nav {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: 1px solid rgba(200, 145, 62, 0.2);
+            background: rgba(10, 15, 28, 0.7);
+            color: #F5D998;
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-fast);
+            flex-shrink: 0;
+            line-height: 1;
+        }
+        .cert-modal-nav:hover {
+            background: rgba(200, 145, 62, 0.2);
+            border-color: rgba(200, 145, 62, 0.5);
+            transform: scale(1.1);
+        }
+        .cert-modal-nav:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        .cert-modal-thumbnails {
+            display: flex;
+            gap: 0.6rem;
+            padding: 0.8rem 1.5rem 1.2rem;
+            overflow-x: auto;
+            justify-content: center;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(200, 145, 62, 0.3) transparent;
+        }
+        .cert-modal-thumbnails::-webkit-scrollbar {
+            height: 4px;
+        }
+        .cert-modal-thumbnails::-webkit-scrollbar-thumb {
+            background: rgba(200, 145, 62, 0.3);
+            border-radius: 2px;
+        }
+        .cert-thumb {
+            width: 64px;
+            height: 80px;
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+            border: 2px solid rgba(200, 145, 62, 0.15);
+            opacity: 0.6;
+            transition: all var(--transition-fast);
+            flex-shrink: 0;
+            background: rgba(5, 8, 20, 0.5);
+        }
+        .cert-thumb:hover {
+            opacity: 0.9;
+            border-color: rgba(200, 145, 62, 0.4);
+        }
+        .cert-thumb.active {
+            opacity: 1;
+            border-color: rgba(200, 145, 62, 0.8);
+            box-shadow: 0 0 12px rgba(200, 145, 62, 0.3);
+        }
+        .cert-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        @media (max-width: 600px) {
+            .cert-modal-content {
+                width: 95vw;
+                max-height: 95vh;
+                border-radius: 14px;
+            }
+            .cert-modal-body {
+                padding: 1rem;
+                gap: 0.4rem;
+            }
+            .cert-modal-nav {
+                width: 36px;
+                height: 36px;
+                font-size: 1.2rem;
+            }
+            .cert-image-wrapper img {
+                max-height: 45vh;
+            }
+            .cert-thumb {
+                width: 48px;
+                height: 60px;
+            }
+            .game-modal {
+                padding: 0.5rem;
+            }
+            .game-modal-content {
+                height: 95vh;
+                border-radius: 12px;
+            }
+            .game-launch-btn {
+                font-size: 0.88rem;
+                padding: 0.65rem 0.8rem;
+            }
+        }
+
+        /* ============ PRINT STYLES ============ */
+        @media print {
+            body {
+                padding-top: 0;
+                background: #fff !important;
+                color: #1a1a1a !important;
+                font-size: 12px;
+                line-height: 1.5;
+            }
+            .nav-bar,
+            .skip-link,
+            .back-to-top,
+            .toast,
+            .btn-icon,
+            .hero-contact-btn,
+            .hero::before,
+            .hero::after,
+            .tabs-nav,
+            .starfield,
+            .glow-top,
+            .game-modal,
+            .card-game-entry {
+                display: none !important;
+            }
+            .hero {
+                background: #f5f5f5 !important;
+                color: #1a1a1a !important;
+                box-shadow: none !important;
+                padding: 1.5rem !important;
+                margin-top: 0 !important;
+                border-radius: 0 !important;
+                page-break-inside: avoid;
+            }
+            .hero-name {
+                color: #1a1a1a !important;
+                font-size: 1.5rem !important;
+            }
+            .hero-tagline {
+                color: #444 !important;
+            }
+            .hero-badge {
+                background: #eee !important;
+                color: #333 !important;
+                border: 1px solid #ccc !important;
+            }
+            .hero-contact {
+                color: #333 !important;
+            }
+            .hero-contact-btn {
+                color: #333 !important;
+                border-color: #999 !important;
+                background: transparent !important;
+            }
+            .section {
+                margin-top: 1.2rem !important;
+                page-break-inside: avoid;
+            }
+            .section-title {
+                color: #1a1a1a !important;
+                font-size: 1.1rem !important;
+            }
+            .card,
+            .highlight-card,
+            .skill-item,
+            .eval-card,
+            .cert-item,
+            .tabs-container {
+                box-shadow: none !important;
+                border: 1px solid #ddd !important;
+                page-break-inside: avoid;
+                background: #fff !important;
+                color: #1a1a1a !important;
+                backdrop-filter: none !important;
+                -webkit-backdrop-filter: none !important;
+            }
+            .card-title,
+            .section-title,
+            .timeline-content .tl-title,
+            .skill-name {
+                color: #1a1a1a !important;
+            }
+            .card:hover,
+            .highlight-card:hover,
+            .skill-item:hover,
+            .eval-card:hover {
+                transform: none !important;
+            }
+            .tab-panel {
+                display: block !important;
+                page-break-inside: avoid;
+            }
+            .tab-panel[hidden] {
+                display: block !important;
+            }
+            /* 打印时在分类面板前补充分类小标题（由渲染层 data-panel-label 提供） */
+            .tab-panel::before {
+                content: attr(data-panel-label);
+                display: block;
+                margin: 0.4rem 0 0.55rem;
+                padding-left: 0.5rem;
+                border-left: 3px solid #c8913e;
+                font-size: 0.95rem;
+                font-weight: 700;
+                color: #1a1a1a;
+            }
+            .timeline::before {
+                background: #ccc !important;
+            }
+            .timeline-dot {
+                background: #555 !important;
+                box-shadow: 0 0 0 3px #fff !important;
+            }
+            .card-tag {
+                background: #eee !important;
+                color: #333 !important;
+                border-color: #ccc !important;
+            }
+            .back-to-top {
+                display: none !important;
+            }
+            /* 一键生成 A4 学术归档版：页眉页脚 margin boxes 由 Chromium/Firefox 渲染，其余内核自动忽略 */
+            @page {
+                size: A4;
+                margin: 1.8cm 1.5cm 1.9cm;
+                @top-center {
+                    content: "徐浩渊 · 个人简历";
+                    font-size: 9pt;
+                    color: #555;
+                    border-bottom: 0.5pt solid #bbb;
+                    padding-bottom: 4pt;
+                    width: 100%;
+                }
+                @bottom-left {
+                    content: "工业工程 × 航空航天 × AI";
+                    font-size: 8.5pt;
+                    color: #777;
+                }
+                @bottom-right {
+                    content: "第 " counter(page) " 页 / 共 " counter(pages) " 页";
+                    font-size: 8.5pt;
+                    color: #777;
+                }
+            }
+        }
+
+        /* ============ UTILITY ============ */
+        /* 键盘用户跳转链接：默认移出视口，获得焦点时滑入 */
+        .skip-link {
+            position: fixed;
+            top: -100px;
+            left: 0.75rem;
+            z-index: 11000;
+            padding: 0.55rem 1rem;
+            border-radius: var(--radius-sm);
+            background: var(--color-accent);
+            color: #1a1a1a;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-decoration: none;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+            transition: top var(--transition-fast);
+        }
+        .skip-link:focus {
+            top: 0.75rem;
+            outline: 2px solid var(--color-tab-indicator);
+            outline-offset: 2px;
+        }
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+        .text-muted {
+            color: var(--color-text-muted);
+            font-style: italic;
+            font-size: 0.8rem;
+        }
+        .text-center {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 无障碍跳转链接：键盘用户首个 Tab 焦点，直接跳到主内容 -->
+    <a class="skip-link" href="#app">跳到主要内容</a>
+
+    <!-- 星幕背景（纯装饰，对辅助技术隐藏） -->
+    <div class="starfield" id="starfield" aria-hidden="true">
+        <canvas id="spaceCanvas"></canvas>
+        <div class="glow-top"></div>
+    </div>
+
+    <!-- 顶栏导航（固定定位，由 header 语义包裹） -->
+    <header class="site-header">
+    <nav class="nav-bar" role="navigation" aria-label="主导航">
+        <div class="nav-inner">
+            <span class="nav-brand">徐浩渊</span>
+            <div class="nav-links" role="menubar" aria-label="页面导航">
+                <a href="#hero" role="menuitem">摘要</a>
+                <a href="#highlights" role="menuitem" class="nav-link-optional">亮点</a>
+                <a href="#experience" role="menuitem">经历</a>
+                <a href="#projects" role="menuitem">项目</a>
+                <a href="#skills" role="menuitem" class="nav-link-optional">技能</a>
+                <a href="#education" role="menuitem">教育</a>
+            </div>
+            <div class="nav-actions">
+                <button class="btn-icon" id="themeToggle" aria-label="切换深色/浅色模式" title="切换深色/浅色模式">
+                    <svg viewBox="0 0 24 24" id="themeIconSun"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                    <svg viewBox="0 0 24 24" id="themeIconMoon" style="display:none;"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                </button>
+                <button class="btn-icon" id="printBtn" aria-label="打印简历" title="打印PDF">
+                    <svg viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 12H4a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+    </header>
+
+    <!-- 主内容区：全部章节由 JS 渲染注入；tabindex=-1 供 skip-link 跳转后落焦 -->
+    <main class="main-container" id="app" tabindex="-1">
+        <!-- Rendered by JS -->
+    </main>
+
+    <!-- BACK TO TOP -->
+    <button class="back-to-top" id="backToTop" aria-label="返回页面顶部" title="返回顶部">
+        <svg viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg>
+    </button>
+
+    <!-- TOAST -->
+    <div class="toast" id="toast" aria-live="polite" aria-atomic="true"></div>
+
+    <!-- 飞机大战游戏弹窗 -->
+    <div id="gameModal" class="game-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="gameModalTitle">
+        <div class="game-modal-content">
+            <div class="game-modal-header">
+                <span id="gameModalTitle" class="game-modal-title">🚀 星河战机</span>
+                <button id="gameModalClose" class="game-modal-close" aria-label="关闭游戏">✕</button>
+            </div>
+            <iframe id="gameModalIframe" class="game-modal-iframe" src="about:blank" allowfullscreen></iframe>
+        </div>
+    </div>
+
+    <script>
+        /* ============================================================
+           徐浩渊 · 个人主页交互脚本
+           ──────────────────────────────────────────────────────────
+           数据层 ：resume 结构化数据（经历 / 项目 / 技能 / 证书…）
+           渲染层 ：buildXxxSection() 模板字符串注入 #app
+           交互层 ：主题切换 / 弹窗 / Tab 键盘导航 / 复制 / 返回顶部 / 打印
+           无障碍 ：skip-link、弹窗焦点圈定（focus trap）、ESC 关闭、焦点归还
+           ============================================================ */
+        // Global certificate modal functions - exposed early for inline onclick
+        window.openCertModal = function() {
+            try {
+                var modal = document.getElementById('certModal');
+                if (!modal) { console.error('弹窗元素 #certModal 未找到'); return; }
+                // 记录打开前的焦点元素，关闭后归还
+                window.__certLastFocused = document.activeElement;
+                modal.hidden = false;
+                // 使用 requestAnimationFrame 确保浏览器先处理 hidden=false，再添加 active 类触发过渡
+                requestAnimationFrame(function() {
+                    modal.classList.add('active');
+                    if (typeof window.showCert === 'function') {
+                        window.showCert(0);
+                    }
+                    // 焦点移入弹窗关闭按钮
+                    var closeBtn = modal.querySelector('.cert-modal-close');
+                    if (closeBtn) closeBtn.focus();
+                });
+                document.body.style.overflow = 'hidden';
+            } catch(err) {
+                console.error('打开证书弹窗失败:', err);
+            }
+        };
+
+        window.closeCertModal = function() {
+            try {
+                var modal = document.getElementById('certModal');
+                if (!modal) return;
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
+                setTimeout(function() {
+                    modal.hidden = true;
+                    // 焦点归还给打开弹窗的触发元素
+                    if (window.__certLastFocused && window.__certLastFocused.focus) {
+                        window.__certLastFocused.focus();
+                    }
+                }, 300);
+            } catch(err) {
+                console.error('关闭证书弹窗失败:', err);
+            }
+        };
+
+        window.showCert = function(idx) {
+            try {
+                var certImages = window.certImages;
+                if (!certImages || !Array.isArray(certImages) || certImages.length === 0) {
+                    console.warn('certImages 未正确初始化');
+                    return;
+                }
+                // 确保 idx 在有效范围内
+                idx = ((idx % certImages.length) + certImages.length) % certImages.length;
+                window.__certIdx = idx;
+                var img = document.getElementById('certImage');
+                if (!img) return;
+                // 图片加载失败时兜底提示，避免 404 堆叠且用户无感知
+                img.onerror = function() {
+                    console.warn('证书图片加载失败:', this.src);
+                    this.alt = '证书图片加载失败，请检查 assets/images/certs/ 目录';
+                };
+                img.src = certImages[idx];
+                img.alt = '证书 ' + (idx + 1);
+                var counter = document.getElementById('certCounter');
+                if (counter) counter.textContent = (idx + 1) + ' / ' + certImages.length;
+                var thumbs = document.querySelectorAll('.cert-thumb');
+                for (var i = 0; i < thumbs.length; i++) {
+                    if (i === idx) thumbs[i].classList.add('active');
+                    else thumbs[i].classList.remove('active');
+                }
+                var thumb = document.querySelector('.cert-thumb[data-cert-idx="' + idx + '"]');
+                if (thumb) thumb.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+            } catch(err) {
+                console.error('显示证书失败:', err);
+            }
+        };
+
+        (function() {
+            // ==================== CERTIFICATE IMAGES ====================
+            var certImages = [
+                'assets/images/certs/cert-ai-junior-2026.jpg',
+                'assets/images/certs/cert-ai-senior-2026.jpg',
+                'assets/images/certs/cert-ai-intro-microbadge.png',
+                'assets/images/certs/cert-ai-university-01.png',
+                'assets/images/certs/cert-ai-university-02.png',
+                'assets/images/certs/cert-ai-university-03.png',
+                'assets/images/certs/cert-ai-university-04.png',
+                'assets/images/certs/cert-misc-01.png',
+                'assets/images/certs/cert-misc-02.png',
+                'assets/images/certs/cert-misc-03.png',
+                'assets/images/certs/cert-misc-04.png',
+                'assets/images/certs/cert-misc-05.png',
+                'assets/images/certs/cert-misc-06.png',
+                'assets/images/certs/cert-misc-07.png',
+                'assets/images/certs/cert-misc-08.png',
+                'assets/images/certs/cert-misc-09.png',
+                'assets/images/certs/cert-misc-10.png',
+                'assets/images/certs/cert-misc-11.png',
+                'assets/images/certs/cert-misc-12.png',
+                'assets/images/certs/cert-misc-13.png',
+                'assets/images/certs/cert-misc-14.png',
+                'assets/images/certs/cert-misc-15.png',
+                'assets/images/certs/cert-misc-16.png',
+                'assets/images/certs/cert-misc-17.png',
+                'assets/images/certs/cert-misc-18.png',
+            ];
+            var certCurrentIndex = 0;
+            // Make accessible globally
+            window.certImages = certImages;
+
+            // ==================== RESUME DATA ====================
+            const resume = {
+                name: '徐浩渊',
+                phone: '198-3472-3795',
+                emailUser: 'nfxhyspace0714',
+                emailDomain: '163.com',
+                location: '江西南昌',
+                github: null, // 待补
+                linkedin: null, // 待补
+                summary: '一名即将步入大学的探索者，聚焦"工业工程 × 航空航天 × 人工智能"交叉领域。以真实工程实践驱动成长——独立完成基于 AI 协同开发的 Canvas 交互游戏，并用工业工程"计划—执行—审计—纠偏"闭环持续迭代自身学习系统，正在构建可迁移的工程思维与方法论。',
+                heroBadges: ['工业工程', 'AI应用', '系统工程', '航空航天', '数据分析', '目标管理'],
+                highlights: [
+                    { number: '100%', label: '借助 AI 协同开发并成功落地网页小游戏' },
+                    { number: 'AI 权威认证', label: '考取专业生成式 AI / 提示工程应用技能证书' },
+                    { number: '60%–70%', label: 'AI 工具链使信息处理与代码调试效率大幅提升' },
+                    { number: 'SOP 标准化', label: '形成个人 AI 编程与工具使用的标准操作流程' },
+                ],
+                education: [{
+                    school: '南昌航空大学',
+                    degree: '工业工程 · 本科（2026.09 入学）',
+                    period: '2026.09 – 2030.06',
+                    details: [
+                        '核心课程：高等数学、线性代数、概率论与数理统计、工程制图、C语言程序设计、运筹学、系统工程、生产计划与控制、质量管理学、人因工程学',
+                        '学业目标：专业课GPA目标 3.8+/4.0，重点夯实数学建模与系统工程基础',
+                        '跨学科规划：系统自学机器学习、深度学习基础理论，同步研读航空航天概论、飞行器设计基础等方向文献',
+                        '深造路径：目标院校——北京航空航天大学（管理科学与工程 / 系统工程方向硕士），计划大三启动考研备战',
+                    ],
+                }, {
+                    school: '（高中）',
+                    degree: '理科 · 高中',
+                    period: '2022.09 – 2026.06',
+                    details: [
+                        '战略性学业决策：高二阶段基于对自身知识体系的深度诊断，主动做出重读高二的战略选择，以时间换取知识体系的系统性重构',
+                        '量化成果：重读后高考成绩较首次模考显著提升，核心科目（数学/物理）单科成绩进入年级前列',
+                        '心智成长：在高压环境下建立起成熟的自我评估—决策—执行—复盘闭环机制，抗压能力与情绪管理能力显著超越同龄水平',
+                    ],
+                }, ],
+                experienceTabs: [{
+                    id: 'exp-intern',
+                    label: '实习目标',
+                    items: [{
+                        title: '目标实习方向（规划中）',
+                        subtitle: '计划时间：2027年暑期（大二暑假）',
+                        meta: '规划筹备阶段',
+                        body: [
+                            '目标行业：航空航天制造企业（如中航工业下属单位）/ 工业智能解决方案公司 / 管理咨询（运营优化方向）',
+                            '目标岗位：工业工程实习生 / 数据分析实习生 / 运营管理实习生',
+                            '当前准备：持续积累Python数据分析能力与运筹优化基础，关注目标企业暑期实习开放节点',
+                        ],
+                        tags: ['航空航天', '数据分析', '运营优化', 'Python'],
+                    }, ],
+                }, {
+                    id: 'exp-campus',
+                    label: '校园活动',
+                    items: [{
+                        title: '校园活动与竞赛规划（规划中）',
+                        subtitle: '本科在读期间',
+                        meta: '积极筹备',
+                        body: [
+                            '计划加入：南昌航空大学航空航天类学术社团 / 数学建模协会 / 人工智能学习小组',
+                            '目标角色：大二起争取社团核心骨干或学术项目负责人角色，积累团队协作与项目管理实战经验',
+                            '竞赛规划：全国大学生数学建模竞赛（CUMCM）/ "挑战杯"大学生课外学术科技作品竞赛 / 全国大学生工业工程应用创新大赛',
+                        ],
+                        tags: ['数学建模', '学术社团', '竞赛', '领导力'],
+                    }, ],
+                }, ],
+                projectTabs: [{
+                    id: 'proj-1',
+                    label: '星河战机 · AI 协同开发',
+                    items: [{
+                        title: '《星河战机》：人机协同编程（AI-Driven Development）工程实操',
+                        subtitle: '独立架构设计 · AI 协同实现 · 迭代调优',
+                        meta: '2026.07 – 2026.08',
+                        body: [
+                            '项目定位：把"AI 协同编程"当作第一门工程实操课——人类定义目标与边界，AI 生成实现，人类负责审查、调试与验收。独立完成太空飞机大战全流程开发（玩法设计、Canvas 渲染、核心逻辑、UI 与音效）。',
+                            'Prompt Engineering 模块化拆解：将游戏拆分为"主循环—输入管线—实体系统—碰撞检测—粒子特效—音效—UI 状态机"等模块，逐模块用结构化 Prompt（角色 + 目标 + 约束 + 验收标准）生成并审查合并，控制单次上下文复杂度，避免"一步到位"式大 Prompt 失控。',
+                            'requestAnimationFrame 渲染循环：实现"固定步长 update / render 分离"的帧循环，以时间差（dt）驱动坦克移动与子弹飞行，确保不同刷新率下手感一致；理解帧率无关逻辑与 Canvas 双缓冲绘制。',
+                            'AABB 碰撞检测：为坦克 / 子弹 / 墙体瓦片建立轴对齐包围盒，结合瓦片地图做网格化碰撞判定与贴墙滑动修正，并通过命中回调串联伤害、爆炸与得分系统。',
+                            '粒子动力学调试：为爆炸与尾迹实现粒子发射器，调试速度矢量、阻尼衰减、生命周期与对象池复用，在视觉冲击与移动端 60fps 性能之间取得平衡。',
+                            '结果：以约传统开发周期 1/3 的时间交付可运行、可触控、三档难度的完整游戏，并沉淀出一套可复用的 AI 协同开发 SOP。',
+                        ],
+                        tags: ['AI协同开发', 'Prompt工程', 'HTML5 Canvas', 'AABB碰撞', '粒子系统', 'requestAnimationFrame'],
+                        gameEntry: {
+                            label: '🚀 一键启动《星河战机》体验',
+                            href: 'plane.html',
+                        },
+                    }, ],
+                }, {
+                    id: 'proj-2',
+                    label: '学习系统 · PDCA 闭环',
+                    items: [{
+                        title: '个人学习系统动态迭代：工业工程"计划—执行—审计—纠偏"闭环实践',
+                        subtitle: '把自身当作"待优化的系统"来运营',
+                        meta: '2022.09 – 2026.06',
+                        body: [
+                            '项目定位：将工业工程（IE）的质量管理思想迁移到个人学习领域，把学习过程当作一个可度量、可审计、可迭代的"系统"来运营。',
+                            '计划（Plan）：以学期为周期设定目标与资源边界，拆解为"周计划—日执行"两级任务网络，为每项任务明确可交付成果与完成标准。',
+                            '执行（Do）：坚持"先完成、再完美"，用错题归因分类法（知识盲区 / 计算失误 / 审题偏差）即时归档执行数据，保证过程可审计。',
+                            '审计（Check）：每月进行一次"系统审计"，对照数据复盘目标达成率、时间分配与短板迁移，识别低效环节并量化差距。',
+                            '纠偏（Act）：基于审计结论动态调整资源分配与策略（如"重读高二"这一战略性决策即由该闭环支撑），并将纠偏动作沉淀为新的标准流程。',
+                            '结果：成绩实现从年级中下游到稳定中上游的阶梯式跃升；验证了"PDCA 闭环作为个人操作系统"的可行性，方法论可迁移至大学学业与科研训练。',
+                        ],
+                        tags: ['工业工程', 'PDCA闭环', '系统审计', '数据驱动', '自我纠偏'],
+                    }, ],
+                }, {
+                    id: 'proj-3',
+                    label: '航空航天知识框架',
+                    items: [{
+                        title: '航空航天领域知识框架自主构建（规划中）',
+                        subtitle: '长期自研项目',
+                        meta: '2026.09 – 2028.06（规划周期）',
+                        body: [
+                            '第一阶段（大一上）：完成《航空航天概论》《飞行器总体设计》通识阅读，建立领域全景认知',
+                            '第一阶段（大一下）：学习空气动力学基础、飞行力学入门，结合 MATLAB 进行简单数值模拟',
+                            '第二阶段（大二）：深入系统工程与可靠性工程方向，对接北航考研专业课大纲',
+                            '预期产出：形成个人知识库（Notion/Obsidian），输出系列学习笔记与领域综述',
+                        ],
+                        tags: ['航空航天', '空气动力学', 'MATLAB', '系统工程', '知识库'],
+                    }, ],
+                }, ],
+                skills: [
+                    { name: 'Prompt Engineering（结构化拆解 / 迭代调优）', stage: '核心能力', detail: 'AI 协同开发工作流：角色 + 目标 + 约束 + 验收标准的模块化拆解与多轮调优' },
+                    { name: '目标管理与动态纠偏（PDCA 闭环）', stage: '核心能力', detail: '通用能力：计划—执行—审计—纠偏，可独立运营长期系统' },
+                    { name: '独立研究与信息检索', stage: '核心能力', detail: '通用能力：从问题定义、资料甄别到结论输出的完整链路' },
+                    { name: '结构化思维与书面表达', stage: '核心能力', detail: '通用能力：逻辑架构 + 数据叙事，跨场景可复用' },
+                    { name: 'HTML5 Canvas 交互开发', stage: '实践中', detail: 'requestAnimationFrame 渲染循环 · AABB 碰撞 · 粒子系统（星河战机实操）' },
+                    { name: 'JavaScript（游戏逻辑与输入管线）', stage: '实践中', detail: '编程与算法：键盘 / 触控统一输入、状态机与实体管理' },
+                    { name: '高级 PPT 可视化设计（逻辑架构 + 数据叙事）', stage: '实践中', detail: '办公与表达' },
+                    { name: '视频剪辑（剪映 / PR）', stage: '实践中', detail: '办公与表达' },
+                    { name: '英语（CET-4 备考中，具备文献阅读能力）', stage: '实践中', detail: '语言能力' },
+                    { name: 'C 语言（基础语法、指针入门、数据结构基础）', stage: '自学入门', detail: '编程与算法：大一课程核心，正在通过项目夯实' },
+                    { name: 'Python（数据处理方向）', stage: '自学入门', detail: 'AI 与数据工具：为运筹分析与数据建模做准备' },
+                    { name: 'MATLAB（数值计算 / 简单仿真入门）', stage: '自学入门', detail: '工程软件：计划用于空气动力学与运筹的数值模拟' },
+                    { name: 'AutoCAD 工程制图', stage: '自学入门', detail: '工程软件' },
+                ],
+                certificates: [
+                    { name: '生成式 AI 应用工程能力认证', issuer: '工信部教育与考试中心', icon: '🤖' },
+                    { name: '高考理科', issuer: '教育考试院', icon: '📜' },
+                    { name: '大学英语四级（CET-4 备考中）', issuer: '教育部考试中心', icon: '🌐' },
+                ],
+                selfEval: [
+                    { title: '战略型自驱者',
+                        desc: '具备罕见的长期目标锚定能力与战略级自我规划意识，能在无外部监督条件下保持高强度、高质量的持续输出。' },
+                    { title: '系统性思维',
+                    desc: '善于将复杂问题拆解为可执行模块，建立"输入—处理—输出—反馈"闭环，追求方法论层面的可复用性。' },
+                    { title: '跨学科融合潜力',
+                        desc: '工业工程的系统优化思维 + AI技术工具能力 + 航空航天领域热情，三者形成差异化竞争力组合。' },
+                    { title: '高韧性执行者',
+                        desc: '经历过战略性"退一步"的决策考验，心理韧性远超同龄人，具备应对高强度竞争环境的底层素质。' },
+                ],
+                lastUpdated: '2026年8月',
+                footerNote: '如需PDF版本或针对特定岗位/院校的定制版本，请随时沟通调整。',
+            };
+
+            // ==================== DOM RENDERER ====================
+            const app = document.getElementById('app');
+            const themeToggle = document.getElementById('themeToggle');
+            const printBtn = document.getElementById('printBtn');
+            const backToTop = document.getElementById('backToTop');
+            const toast = document.getElementById('toast');
+            const themeIconSun = document.getElementById('themeIconSun');
+            const themeIconMoon = document.getElementById('themeIconMoon');
+            const htmlEl = document.documentElement;
+
+            // Email assembly (anti-scraping)
+            const fullEmail = resume.emailUser + '@' + resume.emailDomain;
+
+            // ==================== THEME LOGIC ====================
+            function getSystemTheme() {
+                return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            }
+
+            function getStoredTheme() {
+                try {
+                    const stored = localStorage.getItem('resume-theme');
+                    if (stored === 'light') return null;
+                    return stored;
+                } catch (e) {
+                    return null;
+                }
+            }
+
+            function applyTheme(theme) {
+                htmlEl.setAttribute('data-theme', theme);
+                // 同步移动端地址栏 / 任务栏配色，避免主题切换后仍显示旧底色
+                const themeColorMeta = document.getElementById('themeColorMeta');
+                if (themeColorMeta) {
+                    themeColorMeta.setAttribute('content', theme === 'dark' ? '#0f1923' : '#f9f7f3');
+                }
+                if (theme === 'dark') {
+                    themeIconSun.style.display = 'none';
+                    themeIconMoon.style.display = '';
+                } else {
+                    themeIconSun.style.display = '';
+                    themeIconMoon.style.display = 'none';
+                }
+                try {
+                    localStorage.setItem('resume-theme', theme);
+                } catch (e) {}
+            }
+
+            // 默认使用深色主题（深空风格）
+            const initialTheme = getStoredTheme() || 'dark';
+            applyTheme(initialTheme);
+
+            themeToggle.addEventListener('click', () => {
+                const current = htmlEl.getAttribute('data-theme');
+                const next = current === 'dark' ? 'light' : 'dark';
+                applyTheme(next);
+            });
+
+            // Listen for system theme changes if user hasn't set a preference
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+                if (!getStoredTheme()) {
+                    applyTheme('dark');
+                }
+            });
+
+            // ==================== ACCESSIBILITY · FOCUS TRAP ====================
+            // 通用焦点圈定：弹窗打开期间 Tab / Shift+Tab 在弹窗内循环，焦点不逃逸到背景
+            function trapFocus(container) {
+                container.addEventListener('keydown', e => {
+                    if (e.key !== 'Tab') return;
+                    const items = Array.from(container.querySelectorAll(
+                        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+                    )).filter(el => !el.disabled && el.offsetParent !== null);
+                    if (items.length === 0) return;
+                    const first = items[0];
+                    const last = items[items.length - 1];
+                    const inside = container.contains(document.activeElement);
+                    if (e.shiftKey && (!inside || document.activeElement === first)) {
+                        e.preventDefault();
+                        last.focus();
+                    } else if (!e.shiftKey && (!inside || document.activeElement === last)) {
+                        e.preventDefault();
+                        first.focus();
+                    }
+                });
+            }
+            // 记录弹窗打开前的焦点元素，关闭后归还，保持键盘焦点连续性
+            let modalLastFocused = null;
+            function rememberFocus() {
+                modalLastFocused = document.activeElement;
+            }
+            function restoreFocus() {
+                if (modalLastFocused && typeof modalLastFocused.focus === 'function') {
+                    modalLastFocused.focus();
+                }
+            }
+
+            // ==================== PRINT ====================
+            printBtn.addEventListener('click', () => {
+                window.print();
+            });
+
+            // ==================== BACK TO TOP ====================
+            function updateBackToTop() {
+                if (window.scrollY > 500) {
+                    backToTop.classList.add('visible');
+                } else {
+                    backToTop.classList.remove('visible');
+                }
+            }
+            window.addEventListener('scroll', updateBackToTop, { passive: true });
+            backToTop.addEventListener('click', () => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+
+            // ==================== TOAST ====================
+            let toastTimer;
+
+            function showToast(message) {
+                clearTimeout(toastTimer);
+                toast.textContent = message;
+                toast.classList.add('show');
+                toastTimer = setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 2000);
+            }
+
+            // ==================== BUILD HTML ====================
+            function buildHeroSection() {
+                const contactButtons = [];
+                if (resume.phone) {
+                    contactButtons.push(`
+                    <a href="tel:${resume.phone}" class="hero-contact-btn" aria-label="拨打电话 ${resume.phone}">
+                        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                        致电
+                    </a>`);
+                }
+                contactButtons.push(`
+                <button class="hero-contact-btn" id="copyEmailBtn" aria-label="复制邮箱地址">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 7 10-7"/></svg>
+                    复制邮箱
+                </button>`);
+                if (resume.github) {
+                    contactButtons.push(
+                        `<a href="${resume.github}" target="_blank" rel="noopener" class="hero-contact-btn">GitHub</a>`);
+                }
+                if (resume.linkedin) {
+                    contactButtons.push(
+                        `<a href="${resume.linkedin}" target="_blank" rel="noopener" class="hero-contact-btn">LinkedIn</a>`);
+                }
+                contactButtons.push(
+                    `<a href="#highlights" class="hero-contact-btn btn-accent">查看亮点 ↓</a>`);
+
+                const badgesHTML = resume.heroBadges.map(b => `<span class="hero-badge">${escapeHTML(b)}</span>`).join(
+                '');
+
+                return `
+                <section class="hero" id="hero" aria-label="个人摘要">
+                    <h1 class="hero-name">${escapeHTML(resume.name)}</h1>
+                    <p class="hero-tagline">${escapeHTML(resume.summary)}</p>
+                    <div class="hero-badges">${badgesHTML}</div>
+                    <div class="hero-contact">${contactButtons.join('')}</div>
+                </section>`;
+            }
+
+            function buildHighlightsSection() {
+                const cards = resume.highlights.map((h, i) => {
+                    const isCertCard = (h.number && h.number.indexOf('AI') > -1 && h.number.indexOf('权威') > -1);
+                    const clickable = isCertCard ? ' onclick="window.openCertModal()"' : '';
+                    const cursorStyle = isCertCard ? 'cursor:pointer;' : '';
+                    return `
+                <div class="highlight-card${i === 0 ? ' featured' : ''}${isCertCard ? ' cert-card' : ''}"${clickable}${isCertCard ? ' role="button" tabindex="0"' : ''} aria-label="${isCertCard ? '点击查看AI证书详情' : ''}" style="${cursorStyle}animation-delay:${i * 60}ms">
+                    <span class="hl-icon">✦</span>
+                    <div class="hl-number">${escapeHTML(h.number)}</div>
+                    <div class="hl-label">${escapeHTML(h.label)}</div>
+                    ${isCertCard ? '<span class="cert-view-hint">点击查看 →</span>' : ''}
+                </div>`;
+                }).join('');
+                return `
+                <section class="section" id="highlights" aria-labelledby="hl-title">
+                    <h2 class="section-title" id="hl-title">
+                        <span class="section-prefix" data-section-id="highlights"></span>
+                        <span class="section-title-text">亮点成果</span>
+                    </h2>
+                    <div class="highlights-grid">${cards}</div>
+                </section>`;
+            }
+
+            function buildTabsSection(sectionId, sectionTitle, tabsData, ariaLabel) {
+                const tabButtons = tabsData.map((t, i) => `
+                <button class="tab-btn${i === 0 && sectionId === 'projects' ? ' tab-featured' : ''}" role="tab" aria-selected="${i === 0 ? 'true' : 'false'}" aria-controls="panel-${t.id}" id="tab-${t.id}" data-tab-id="${t.id}" tabindex="${i === 0 ? '0' : '-1'}">
+                    ${escapeHTML(t.label)}
+                </button>`).join('');
+
+                const tabPanels = tabsData.map((t, i) => {
+                    const itemsHTML = t.items.map((item, j) => {
+                        const bodyList = item.body.map(b => `<li>${escapeHTML(b)}</li>`).join('');
+                        const tagsHTML = item.tags ? item.tags.map(tg =>
+                            `<span class="card-tag">${escapeHTML(tg)}</span>`).join('') : '';
+                        const gameBtnHTML = item.gameEntry ? `
+                            <div class="card-game-entry">
+                                <button class="game-launch-btn" data-game-href="${escapeHTML(item.gameEntry.href)}" data-game-label="${escapeHTML(item.gameEntry.label)}">
+                                    <span class="game-btn-icon">🚀</span>
+                                    <span class="game-btn-text">${escapeHTML(item.gameEntry.label)}</span>
+                                </button>
+                            </div>` : '';
+                        const featured = sectionId === 'projects' && i === 0 && j === 0 ? ' featured' : '';
+                        return `
+                        <div class="card${featured}">
+                            <div class="card-header">
+                                <span class="card-title">${escapeHTML(item.title)}</span>
+                                <span class="card-meta">${escapeHTML(item.meta || '')}</span>
+                            </div>
+                            ${item.subtitle ? `<div class="card-subtitle" style="margin-bottom:0.5rem;">${escapeHTML(item.subtitle)}</div>` : ''}
+                            <div class="card-body"><ul>${bodyList}</ul></div>
+                            ${tagsHTML ? `<div class="card-tags">${tagsHTML}</div>` : ''}
+                            ${gameBtnHTML}
+                        </div>`;
+                    }).join('');
+                    return `
+                    <div class="tab-panel" role="tabpanel" id="panel-${t.id}" aria-labelledby="tab-${t.id}" data-panel-label="${escapeHTML(t.label)}" ${i !== 0 ? 'hidden' : ''}>
+                        ${itemsHTML}
+                    </div>`;
+                }).join('');
+
+                return `
+                <section class="section" id="${sectionId}" aria-labelledby="${sectionId}-title">
+                    <h2 class="section-title" id="${sectionId}-title">
+                        <span class="section-prefix" data-section-id="${sectionId}"></span>
+                        <span class="section-title-text">${escapeHTML(sectionTitle)}</span>
+                    </h2>
+                    <div class="tabs-container" role="tablist" aria-label="${escapeHTML(ariaLabel)}" data-tabs-root="${sectionId}">
+                        <div class="tabs-nav">${tabButtons}</div>
+                        <div class="tabs-panels">${tabPanels}</div>
+                    </div>
+                </section>`;
+            }
+
+            function buildSkillsSection() {
+                const stageOrder = ['核心能力', '实践中', '自学入门'];
+                const stageMeta = {
+                    '核心能力': { cls: 'stage-core', desc: '可独立交付，已沉淀为方法论' },
+                    '实践中': { cls: 'stage-practice', desc: '正在真实项目中打磨' },
+                    '自学入门': { cls: 'stage-basic', desc: '已完成入门，持续进阶中' },
+                };
+                const legendHTML = stageOrder.map(stage => `
+                    <span class="skill-legend-item">
+                        <span class="skill-stage-badge ${stageMeta[stage].cls}">${escapeHTML(stage)}</span>
+                        <span class="skill-legend-desc">${escapeHTML(stageMeta[stage].desc)}</span>
+                    </span>`).join('');
+                const skillCards = resume.skills.map(s => {
+                    const meta = stageMeta[s.stage] || stageMeta['自学入门'];
+                    return `
+                <div class="skill-item">
+                    <div class="skill-name-row">
+                        <span class="skill-name">${escapeHTML(s.name)}</span>
+                        <span class="skill-stage-badge ${meta.cls}">${s.stage}</span>
+                    </div>
+                    <div class="skill-detail">${escapeHTML(s.detail)}</div>
+                </div>`;
+                }).join('');
+                return `
+                <section class="section" id="skills" aria-labelledby="skills-title">
+                    <h2 class="section-title" id="skills-title">
+                        <span class="section-prefix" data-section-id="skills"></span>
+                        <span class="section-title-text">技能矩阵</span>
+                    </h2>
+                    <div class="skill-legend">${legendHTML}</div>
+                    <div class="skill-grid">${skillCards}</div>
+                </section>`;
+            }
+
+            function buildEducationSection() {
+                const items = resume.education.map(e => `
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <div class="tl-title">${escapeHTML(e.school)}</div>
+                        <div class="tl-sub">${escapeHTML(e.degree)} · ${escapeHTML(e.period)}</div>
+                        <div class="tl-desc">
+                            <ul style="list-style:none;padding:0;">
+                                ${e.details.map(d => `<li style="padding-left:1em;position:relative;margin-bottom:0.25rem;"><span style="position:absolute;left:0;color:var(--color-accent);">•</span>${escapeHTML(d)}</li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                </div>`).join('');
+                return `
+                <section class="section" id="education" aria-labelledby="edu-title">
+                    <h2 class="section-title" id="edu-title">
+                        <span class="section-prefix" data-section-id="education"></span>
+                        <span class="section-title-text">教育背景</span>
+                    </h2>
+                    <div class="timeline">${items}</div>
+                </section>`;
+            }
+
+            function buildCertificatesSection() {
+                if (!resume.certificates || resume.certificates.length === 0) return '';
+                const items = resume.certificates.map(c => `
+                <li class="cert-item">
+                    <span class="cert-icon" aria-hidden="true">${escapeHTML(c.icon || '📜')}</span>
+                    <span><strong>${escapeHTML(c.name)}</strong><br><small class="text-muted">${escapeHTML(c.issuer)}</small></span>
+                </li>`).join('');
+                return `
+                <section class="section" id="certificates" aria-labelledby="cert-title">
+                    <h2 class="section-title" id="cert-title">
+                        <span class="section-prefix" data-section-id="certificates"></span>
+                        <span class="section-title-text">获奖与证书</span>
+                    </h2>
+                    <ul class="cert-list">${items}</ul>
+                </section>`;
+            }
+
+            function buildSelfEvalSection() {
+                const cards = resume.selfEval.map(e => `
+                <div class="eval-card">
+                    <div class="eval-title">${escapeHTML(e.title)}</div>
+                    <div class="eval-desc">${escapeHTML(e.desc)}</div>
+                </div>`).join('');
+                return `
+                <section class="section" id="self-eval" aria-labelledby="eval-title">
+                    <h2 class="section-title" id="eval-title">
+                        <span class="section-prefix" data-section-id="self-eval"></span>
+                        <span class="section-title-text">自我评价</span>
+                    </h2>
+                    <div class="eval-grid">${cards}</div>
+                </section>`;
+            }
+
+            function buildFooter() {
+                return `
+                <footer class="footer">
+                    <p>© ${new Date().getFullYear()} <strong>${escapeHTML(resume.name)}</strong> · 本简历最后更新：${escapeHTML(resume.lastUpdated)}</p>
+                    <p style="font-size:0.74rem;">${escapeHTML(resume.footerNote)}</p>
+                </footer>`;
+            }
+
+            function escapeHTML(str) {
+                if (str === null || str === undefined) return '';
+                const div = document.createElement('div');
+                div.textContent = str;
+                return div.innerHTML;
+            }
+
+            // ==================== RENDER ALL ====================
+            function renderAll() {
+                let html = '';
+                html += buildHeroSection();
+                html += buildHighlightsSection();
+                html += buildTabsSection('experience', '经历', resume.experienceTabs, '经历标签');
+                html += buildTabsSection('projects', '项目经历', resume.projectTabs, '项目标签');
+                html += buildSkillsSection();
+                html += buildEducationSection();
+                html += buildCertificatesSection();
+                html += buildSelfEvalSection();
+                html += buildFooter();
+                html += `
+                <div class="cert-modal" id="certModal" role="dialog" aria-modal="true" aria-label="AI证书查看器" hidden>
+                    <div class="cert-modal-overlay" onclick="window.closeCertModal()"></div>
+                    <div class="cert-modal-content">
+                        <button class="cert-modal-close" onclick="window.closeCertModal()" aria-label="关闭证书">✕</button>
+                        <div class="cert-modal-header">
+                            <h3>AI 权威认证证书</h3>
+                            <span class="cert-modal-counter" id="certCounter">1 / 25</span>
+                        </div>
+                        <div class="cert-modal-body">
+                            <button class="cert-modal-nav cert-prev" id="certPrev" onclick="window.showCert((window.__certIdx - 1 + window.certImages.length) % window.certImages.length)" aria-label="上一张">‹</button>
+                            <div class="cert-image-wrapper">
+                                <img id="certImage" src="assets/images/certs/cert-ai-junior-2026.jpg" alt="AI证书 1" />
+                            </div>
+                            <button class="cert-modal-nav cert-next" id="certNext" onclick="window.showCert((window.__certIdx + 1) % window.certImages.length)" aria-label="下一张">›</button>
+                        </div>
+                        <div class="cert-modal-thumbnails" id="certThumbnails"></div>
+                    </div>
+                </div>`;
+                app.innerHTML = html;
+
+                // Attach event listeners after render
+                attachTabListeners();
+                attachEmailCopyListener();
+                initCertModal();
+            }
+
+            // ==================== EMAIL COPY ====================
+            function attachEmailCopyListener() {
+                const btn = document.getElementById('copyEmailBtn');
+                if (!btn) return;
+                btn.addEventListener('click', () => {
+                    const email = fullEmail;
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        navigator.clipboard.writeText(email).then(() => {
+                            showToast('邮箱已复制：' + email);
+                        }).catch(() => {
+                            fallbackCopy(email);
+                        });
+                    } else {
+                        fallbackCopy(email);
+                    }
+                });
+            }
+
+            function fallbackCopy(text) {
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                ta.style.position = 'fixed';
+                ta.style.left = '-9999px';
+                document.body.appendChild(ta);
+                ta.select();
+                try {
+                    document.execCommand('copy');
+                    showToast('邮箱已复制：' + text);
+                } catch (e) {
+                    showToast('复制失败，请手动复制');
+                }
+                document.body.removeChild(ta);
+            }
+
+            // ==================== TAB LOGIC ====================
+            function attachTabListeners() {
+                const tabRoots = document.querySelectorAll('[data-tabs-root]');
+                tabRoots.forEach(root => {
+                    const tabs = root.querySelectorAll('.tab-btn');
+                    const panels = root.querySelectorAll('.tab-panel');
+                    const tabList = tabs;
+
+                    tabs.forEach(tab => {
+                        tab.addEventListener('click', () => {
+                            activateTab(root, tab.getAttribute('data-tab-id'));
+                        });
+                        tab.addEventListener('keydown', (e) => {
+                            const currentIndex = Array.from(tabs).indexOf(tab);
+                            let newIndex = currentIndex;
+                            if (e.key === 'ArrowRight') {
+                                e.preventDefault();
+                                newIndex = (currentIndex + 1) % tabs.length;
+                            } else if (e.key === 'ArrowLeft') {
+                                e.preventDefault();
+                                newIndex = (currentIndex - 1 + tabs.length) % tabs.length;
+                            } else if (e.key === 'Home') {
+                                e.preventDefault();
+                                newIndex = 0;
+                            } else if (e.key === 'End') {
+                                e.preventDefault();
+                                newIndex = tabs.length - 1;
+                            }
+                            if (newIndex !== currentIndex) {
+                                const targetTab = tabs[newIndex];
+                                activateTab(root, targetTab.getAttribute('data-tab-id'));
+                                targetTab.focus();
+                            }
+                        });
+                    });
+                });
+            }
+
+            function activateTab(root, tabId) {
+                const tabs = root.querySelectorAll('.tab-btn');
+                const panels = root.querySelectorAll('.tab-panel');
+                tabs.forEach(t => {
+                    const isActive = t.getAttribute('data-tab-id') === tabId;
+                    t.setAttribute('aria-selected', isActive ? 'true' : 'false');
+                    t.setAttribute('tabindex', isActive ? '0' : '-1');
+                });
+                panels.forEach(p => {
+                    if (p.id === 'panel-' + tabId) {
+                        p.removeAttribute('hidden');
+                    } else {
+                        p.setAttribute('hidden', '');
+                    }
+                });
+            }
+
+            // ==================== CERTIFICATE MODAL ====================
+            var certModalInitialized = false;
+
+            function initCertModal() {
+                var certImages = window.certImages;
+
+                // 仅注册一次事件监听器
+                if (!certModalInitialized) {
+                    certModalInitialized = true;
+
+                    // 焦点圈定：弹窗内 Tab 循环，不逃逸到背景页面（trapFocus 定义于本作用域下方）
+                    var certModalEl = document.getElementById('certModal');
+                    if (certModalEl) trapFocus(certModalEl);
+
+                    // 事件委托：确保点击 .cert-card 元素时触发弹窗
+                    document.addEventListener('click', function(e) {
+                        var certCard = e.target.closest('.cert-card');
+                        if (certCard) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            window.openCertModal();
+                        }
+                    });
+
+                    // 键盘事件监听：ESC关闭，左右箭头翻页
+                    document.addEventListener('keydown', function(e) {
+                        var modal = document.getElementById('certModal');
+                        if (!modal || !modal.classList.contains('active')) return;
+                        if (e.key === 'Escape') window.closeCertModal();
+                        if (e.key === 'ArrowLeft') {
+                            var ci = window.__certIdx || 0;
+                            var imgs = window.certImages;
+                            if (imgs && imgs.length) {
+                                window.showCert((ci - 1 + imgs.length) % imgs.length);
+                            }
+                        }
+                        if (e.key === 'ArrowRight') {
+                            var ci = window.__certIdx || 0;
+                            var imgs = window.certImages;
+                            if (imgs && imgs.length) {
+                                window.showCert((ci + 1) % imgs.length);
+                            }
+                        }
+                    });
+                }
+
+                // 如果没有证书图片，跳过缩略图初始化
+                if (!certImages || certImages.length === 0) return;
+
+                var thumbnailsContainer = document.getElementById('certThumbnails');
+                if (thumbnailsContainer) {
+                    thumbnailsContainer.innerHTML = certImages.map(function(src, i) {
+                        return '<div class="cert-thumb' + (i === 0 ? ' active' : '') + '" data-cert-idx="' + i + '" onclick="window.showCert(' + i + ')"><img src="' + src + '" alt="证书缩略图 ' + (i + 1) + '" loading="lazy" /></div>';
+                    }).join('');
+                }
+            }
+
+            // ==================== SMOOTH SCROLL FOR NAV LINKS ====================
+            document.querySelectorAll('.nav-links a[href^="#"]').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href').substring(1);
+                    const target = document.getElementById(targetId);
+                    if (target) {
+                        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                });
+            });
+
+            // Also handle hero contact button smooth scroll
+            document.addEventListener('click', function(e) {
+                const link = e.target.closest('a[href^="#"]');
+                if (link && link.closest('.hero-contact')) {
+                    e.preventDefault();
+                    const targetId = link.getAttribute('href').substring(1);
+                    const target = document.getElementById(targetId);
+                    if (target) {
+                        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                }
+            });
+
+            // ==================== CANVAS STARFIELD GENERATION ====================
+            function initStarfield() {
+                const canvas = document.getElementById('spaceCanvas');
+                if (!canvas) return;
+
+                const ctx = canvas.getContext('2d');
+                let width = 0, height = 0;
+                let stars = [];
+                let brightStars = [];
+                let shootingStars = [];
+                let animationId = null;
+                let time = 0;
+                const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+                function resize() {
+                    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+                    width = window.innerWidth;
+                    height = window.innerHeight;
+                    canvas.width = width * dpr;
+                    canvas.height = height * dpr;
+                    canvas.style.width = width + 'px';
+                    canvas.style.height = height + 'px';
+                    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+                    generateStars();
+                }
+
+                function generateStars() {
+                    stars = [];
+                    brightStars = [];
+                    const isMobile = width < 680;
+                    const starCount = isMobile ? 80 : 120;
+
+                    for (let i = 0; i < starCount; i++) {
+                        const isBright = Math.random() < 0.12;
+                        const star = {
+                            x: Math.random() * width,
+                            y: Math.random() * height,
+                            radius: isBright ? Math.random() * 0.6 + 1.4 : Math.random() * 1.2 + 0.6,
+                            vx: (Math.random() - 0.3) * 0.15,
+                            vy: (Math.random() - 0.3) * 0.15,
+                            isBright: isBright,
+                            baseAlpha: isBright ? 0.6 : 0.25,
+                            phase: Math.random() * Math.PI * 2,
+                            pulseSpeed: 0.005 + Math.random() * 0.008
+                        };
+                        stars.push(star);
+                        if (isBright && brightStars.length < 8) {
+                            brightStars.push(star);
+                        }
+                    }
+                }
+
+                function getThemeColors() {
+                    const theme = htmlEl.getAttribute('data-theme');
+                    if (theme === 'light') {
+                        return {
+                            starFill: 'rgba(30, 59, 92, ',
+                            brightFill: 'rgba(200, 145, 62, ',
+                            lineStroke: 'rgba(30, 59, 92, 0.2)',
+                            brightLineStroke: 'rgba(200, 145, 62, 0.25)',
+                            glowColor: 'rgba(200, 145, 62, ',
+                            shootingColor: 'rgba(30, 59, 92, '
+                        };
+                    }
+                    return {
+                        starFill: 'rgba(192, 216, 240, ',
+                        brightFill: 'rgba(226, 241, 255, ',
+                        lineStroke: 'rgba(180, 210, 255, 0.12)',
+                        brightLineStroke: 'rgba(180, 210, 255, 0.18)',
+                        glowColor: 'rgba(130, 170, 230, ',
+                        shootingColor: 'rgba(226, 241, 255, '
+                    };
+                }
+
+                function drawStar(star, colors) {
+                    const theme = htmlEl.getAttribute('data-theme');
+                    star.x += star.vx;
+                    star.y += star.vy;
+
+                    if (star.x < 0) star.x = width;
+                    if (star.x > width) star.x = 0;
+                    if (star.y < 0) star.y = height;
+                    if (star.y > height) star.y = 0;
+
+                    let alpha;
+                    if (star.isBright) {
+                        alpha = star.baseAlpha + Math.sin(time * star.pulseSpeed + star.phase) * 0.35;
+                        alpha = Math.max(0.2, Math.min(1, alpha));
+                    } else {
+                        alpha = star.baseAlpha + Math.sin(time * star.pulseSpeed + star.phase) * 0.12;
+                    }
+
+                    if (star.isBright && theme !== 'light') {
+                        const glowR = star.radius * 6;
+                        const gradient = ctx.createRadialGradient(star.x, star.y, 0, star.x, star.y, glowR);
+                        gradient.addColorStop(0, colors.glowColor + (alpha * 0.4) + ')');
+                        gradient.addColorStop(0.5, colors.glowColor + (alpha * 0.15) + ')');
+                        gradient.addColorStop(1, colors.glowColor + '0)');
+                        ctx.fillStyle = gradient;
+                        ctx.beginPath();
+                        ctx.arc(star.x, star.y, glowR, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+
+                    ctx.fillStyle = (star.isBright ? colors.brightFill : colors.starFill) + alpha + ')';
+                    ctx.beginPath();
+                    ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                function drawConnections(colors) {
+                    const brightArr = brightStars;
+                    for (let i = 0; i < brightArr.length; i++) {
+                        for (let j = i + 1; j < brightArr.length; j++) {
+                            const dx = brightArr[i].x - brightArr[j].x;
+                            const dy = brightArr[i].y - brightArr[j].y;
+                            const dist = Math.sqrt(dx * dx + dy * dy);
+                            if (dist < 200) {
+                                const opacity = (1 - dist / 200) * 0.25;
+                                ctx.strokeStyle = colors.brightLineStroke.replace(/[\d.]+\)$/, opacity + ')');
+                                ctx.lineWidth = 0.5;
+                                ctx.beginPath();
+                                ctx.moveTo(brightArr[i].x, brightArr[i].y);
+                                ctx.lineTo(brightArr[j].x, brightArr[j].y);
+                                ctx.stroke();
+                            }
+                        }
+                    }
+
+                    for (let i = 0; i < brightArr.length; i++) {
+                        for (let s = 0; s < stars.length; s++) {
+                            if (stars[s].isBright) continue;
+                            const dx = brightArr[i].x - stars[s].x;
+                            const dy = brightArr[i].y - stars[s].y;
+                            const dist = Math.sqrt(dx * dx + dy * dy);
+                            if (dist < 100) {
+                                const opacity = (1 - dist / 100) * 0.15;
+                                ctx.strokeStyle = colors.lineStroke.replace(/[\d.]+\)$/, opacity + ')');
+                                ctx.lineWidth = 0.3;
+                                ctx.beginPath();
+                                ctx.moveTo(brightArr[i].x, brightArr[i].y);
+                                ctx.lineTo(stars[s].x, stars[s].y);
+                                ctx.stroke();
+                            }
+                        }
+                    }
+                }
+
+                function spawnShootingStar() {
+                    const theme = htmlEl.getAttribute('data-theme');
+                    if (theme === 'light') return;
+                    const startX = Math.random() * width * 0.6 + width * 0.2;
+                    const startY = Math.random() * height * 0.3;
+                    shootingStars.push({
+                        x: startX,
+                        y: startY,
+                        length: 60 + Math.random() * 60,
+                        speed: 6 + Math.random() * 4,
+                        angle: Math.PI / 4 + (Math.random() - 0.5) * 0.4,
+                        alpha: 1,
+                        decay: 0.008 + Math.random() * 0.006
+                    });
+                }
+
+                function drawShootingStars(colors) {
+                    for (let i = shootingStars.length - 1; i >= 0; i--) {
+                        const s = shootingStars[i];
+                        s.x += Math.cos(s.angle) * s.speed;
+                        s.y += Math.sin(s.angle) * s.speed;
+                        s.alpha -= s.decay;
+
+                        if (s.alpha <= 0 || s.x > width + 100 || s.y > height + 100) {
+                            shootingStars.splice(i, 1);
+                            continue;
+                        }
+
+                        const tailX = s.x - Math.cos(s.angle) * s.length;
+                        const tailY = s.y - Math.sin(s.angle) * s.length;
+                        const gradient = ctx.createLinearGradient(s.x, s.y, tailX, tailY);
+                        gradient.addColorStop(0, colors.shootingColor + s.alpha + ')');
+                        gradient.addColorStop(1, colors.shootingColor + '0)');
+                        ctx.strokeStyle = gradient;
+                        ctx.lineWidth = 1.2;
+                        ctx.lineCap = 'round';
+                        ctx.beginPath();
+                        ctx.moveTo(s.x, s.y);
+                        ctx.lineTo(tailX, tailY);
+                        ctx.stroke();
+
+                        ctx.fillStyle = colors.shootingColor + Math.min(1, s.alpha * 1.5) + ')';
+                        ctx.beginPath();
+                        ctx.arc(s.x, s.y, 1.5, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+
+                function animate() {
+                    time++;
+                    ctx.clearRect(0, 0, width, height);
+                    const colors = getThemeColors();
+
+                    for (const star of stars) {
+                        drawStar(star, colors);
+                    }
+
+                    drawConnections(colors);
+                    drawShootingStars(colors);
+
+                    animationId = requestAnimationFrame(animate);
+                }
+
+                function scheduleShootingStars() {
+                    const delay = Math.random() * 3000 + 5000;
+                    setTimeout(() => {
+                        spawnShootingStar();
+                        scheduleShootingStars();
+                    }, delay);
+                }
+
+                resize();
+                if (!reduceMotion) {
+                    animate();
+                    scheduleShootingStars();
+                }
+
+                window.addEventListener('resize', () => {
+                    cancelAnimationFrame(animationId);
+                    resize();
+                    if (!reduceMotion) animate();
+                });
+
+                // 主题切换时重新绘制（轻量刷新）
+                const themeObserver = new MutationObserver(() => {
+                    if (!reduceMotion && animationId === null) {
+                        animate();
+                    }
+                });
+                themeObserver.observe(htmlEl, { attributes: true, attributeFilter: ['data-theme'] });
+            }
+
+            // ==================== INIT ====================
+            renderAll();
+            updateBackToTop();
+            initStarfield();
+
+            // ==================== SERVICE WORKER REGISTRATION (OFFLINE SUPPORT) ====================
+            // Not using external SW, but page is fully self-contained so it works offline naturally.
+
+            console.log('✅ 简历页面已就绪 | 徐浩渊 | ' + resume.lastUpdated);
+            console.log('📧 联系邮箱：' + fullEmail);
+            console.log('🖨 点击右上角打印按钮或使用 Ctrl+P / Cmd+P 导出PDF');
+            console.log('🌓 支持深色/浅色模式切换，自动跟随系统偏好');
+
+            // 填充 section 编号前缀（航天星图风格）
+            const sectionNumbering = {
+                'highlights': '00 //',
+                'experience': '01 //',
+                'projects': '02 //',
+                'skills': '03 //',
+                'education': '04 //',
+                'certificates': '05 //',
+                'self-eval': '06 //',
+            };
+            document.querySelectorAll('.section-prefix').forEach(el => {
+                const id = el.dataset.sectionId;
+                el.textContent = sectionNumbering[id] || '◆';
+            });
+
+            // 飞机大战游戏弹窗
+            const gameModal = document.getElementById('gameModal');
+            const gameModalTitle = document.getElementById('gameModalTitle');
+            const gameModalIframe = document.getElementById('gameModalIframe');
+            const gameModalClose = document.getElementById('gameModalClose');
+
+            // 将键盘焦点交给游戏 iframe 内部容器。
+            // 说明：iframe 内部脚本自行 focus() 在「首次用户激活」前可能被浏览器拒绝，
+            // 因此必须由父页面在用户手势内聚焦 iframe，并在其 load 后再次确认焦点。
+            function focusGameIframe() {
+                if (!gameModalIframe) return;
+                // 弹窗未激活时（如关闭时 src 置为 about:blank 触发的 load 事件）不做聚焦，
+                // 避免对已隐藏的 iframe 产生无意义的焦点操作
+                if (gameModal && !gameModal.classList.contains('active')) return;
+                try {
+                    // contentWindow 在 file:// 协议下同样可能被安全策略限制，需一并捕获
+                    const iw = gameModalIframe.contentWindow;
+                    if (iw && typeof iw.focus === 'function') {
+                        try { iw.focus(); } catch (_) {}
+                    }
+                    const idoc = gameModalIframe.contentDocument;
+                    if (idoc) {
+                        const gc = idoc.getElementById('gameContainer');
+                        if (gc && typeof gc.focus === 'function') {
+                            gc.focus();
+                            return;
+                        }
+                    }
+                } catch (err) {
+                    // 跨域 / 安全限制：静默降级，交由下方兜底聚焦
+                }
+                // 兜底：聚焦 iframe 元素本身，浏览器仍会向其文档路由键盘事件
+                try { gameModalIframe.focus(); } catch (_) {}
+            }
+            function openGameModal(href, label) {
+                if (!gameModalIframe) return;
+                // 防御：data-game-href 缺失时回退到默认游戏页
+                href = href || 'plane.html';
+                // 安全：防止 iframe 加载当前页自身，在 file:// 下会触发跨域报错
+                if (href === '' || href.toLowerCase() === 'index.html' || href === location.pathname.split('/').pop()) {
+                    console.warn('openGameModal: 拒绝加载当前页作为 iframe src，回退到 plane.html');
+                    href = 'plane.html';
+                }
+                rememberFocus();
+                gameModalTitle.textContent = label || '星河战机';
+                // 附加版本参数，防止 iframe 命中浏览器缓存的旧版游戏页面（旧版无键盘焦点修复）
+                gameModalIframe.src = href + (href.includes('?') ? '&' : '?') + 'v=20260817';
+                gameModal.classList.add('active');
+                gameModal.setAttribute('aria-hidden', 'false');
+                document.body.style.overflow = 'hidden';
+                // 优先把键盘焦点交给游戏 iframe（处于用户点击手势内，浏览器允许转移焦点），
+                // 使方向键 / WASD 立即可用；若浏览器拒绝则回退到关闭按钮，仍满足弹窗焦点管理。
+                try { gameModalIframe.focus(); } catch (e) {}
+                if (gameModalClose && document.activeElement !== gameModalIframe) gameModalClose.focus();
+            }
+            function closeGameModal() {
+                if (!gameModal) return;
+                gameModal.classList.remove('active');
+                gameModal.setAttribute('aria-hidden', 'true');
+                // 用 about:blank 卸载 iframe：about:blank 继承父文档的源，在 file:/// 协议下不会触发
+                // "file: URLs are treated as unique security origins" 拦截；
+                // 而空串 / 当前页 URL 作为 src 时，Chrome 在本地协议下可能把 iframe 解析为自身页面导致跨域报错。
+                // 下次打开时 openGameModal 会重新动态赋值 src，此处无需预载任何内容。
+                if (gameModalIframe) gameModalIframe.src = 'about:blank';
+                document.body.style.overflow = '';
+                restoreFocus();
+            }
+            if (gameModalClose) {
+                gameModalClose.addEventListener('click', closeGameModal);
+            }
+            if (gameModal) {
+                trapFocus(gameModal);
+                gameModal.addEventListener('click', e => {
+                    if (e.target === gameModal) closeGameModal();
+                });
+            }
+            // iframe 加载完成后再次聚焦游戏容器，覆盖异步加载导致的焦点竞态
+            if (gameModalIframe) {
+                gameModalIframe.addEventListener('load', focusGameIframe);
+            }
+            document.addEventListener('keydown', e => {
+                if (e.key === 'Escape' && gameModal && gameModal.classList.contains('active')) closeGameModal();
+            });
+
+            // 绑定所有游戏启动按钮
+            document.addEventListener('click', e => {
+                const btn = e.target.closest('.game-launch-btn');
+                if (btn) {
+                    e.preventDefault();
+                    const href = btn.dataset.gameHref;
+                    const label = btn.dataset.gameLabel || '星河战机';
+                    openGameModal(href, label);
+                }
+            });
+
+        })();
+    </script>
+</body>
+</html>
